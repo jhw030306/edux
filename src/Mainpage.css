@@ -1,0 +1,21 @@
+/* Mainpage.css */
+.mainpage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+}
+
+.main-title {
+  font-family: "ddag";
+  font-size: 100px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 40px;
+}
+
+.auth-button-group {
+  display: flex;
+  gap: 120px;
+}

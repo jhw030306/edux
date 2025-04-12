@@ -1,0 +1,29 @@
+/* index.css */
+@font-face {
+  font-family: "ddag"; /* 사용할 폰트의 이름을 정의 */
+  src: url("./fonts/ddag.ttf"); /* 폰트 파일의 위치*/
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("../fonts/PretendardVariable.ttf");
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(
+    118deg,
+    #6397c7 10.36%,
+    #0d365c 91.37%
+  );
+}
+
+* {
+  font-family: "Pretendard", sans-serif;
+  text-align: center;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+}

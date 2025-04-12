@@ -1,0 +1,119 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  background: linear-gradient(
+    118deg,
+    #6397c7 0%,
+    #0d365c 100%
+  );
+  height: 100vh;
+}
+
+.login-container {
+  background-color: white;
+  width: 100%;
+  max-width: 720px;
+  margin: 100px;
+  padding: 40px 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.login-title {
+  font-size: 48px;
+  font-family: "ddag", Helvetica;
+  color: #000000;
+  text-align: center;
+  margin-bottom: 24px;
+  cursor: pointer;
+}
+
+.login-radio-group {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 24px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Pretendard-Light";
+  font-size: 14px;
+  color: #000;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.input-group {
+  width: 100%;
+  max-width: 400px;
+  border-bottom: 1px solid #0d365b;
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-label {
+  font-size: 0px;
+  font-family: "Pretendard-Light";
+  color: #000;
+}
+
+.input-id,
+.input-password {
+  text-align: left;
+  width: 100%;
+  font-size: 18px;
+  font-family: "Pretendard-Light";
+  color: #000;
+  border: none;
+  outline: none;
+  padding: 8px 0;
+  background-color: transparent;
+}
+
+.input-id::placeholder,
+.input-password::placeholder {
+  color: #aaa;
+  font-size: 18px;
+}
+
+.login-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 14px;
+  font-family: "Pretendard-Regular";
+  color: #7c7c7c;
+}
+
+.login-actions .separator {
+  color: #7c7c7c;
+}
+
+.login-button {
+  background-color: #717171;
+  color: white;
+  font-size: 20px;
+  font-family: "Pretendard-Bold";
+  padding: 14px;
+  border: none;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  margin-top: 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
