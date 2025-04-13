@@ -2,6 +2,7 @@
   display: flex;
   justify-content: center;
   width: 100%;
+  align-items: center;
   background: linear-gradient(
     118deg,
     #6397c7 0%,
@@ -90,17 +91,19 @@
 }
 
 .login-actions {
-  margin-top: 16px;
+  margin-top: 10px;
   display: flex;
   justify-content: center;
   gap: 16px;
   font-size: 14px;
   font-family: "Pretendard-Regular";
   color: #7c7c7c;
+  cursor: pointer;
 }
 
 .login-actions .separator {
   color: #7c7c7c;
+  cursor: default;
 }
 
 .login-button {

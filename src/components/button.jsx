@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
-import "./button.css";
+import "./Button.css";
 
 export const Button = ({
   property1,

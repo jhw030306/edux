@@ -1,7 +1,7 @@
 // src/Mainpage.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "./components/button.jsx";
+import { Button } from "./components/Button.jsx";
 import "./Mainpage.css";
 
 export const Mainpage = () => {
@@ -9,6 +9,10 @@ export const Mainpage = () => {
 
   const goToLogin = () => {
     navigate("/login");
+  };
+
+  const goToSignup = () => {
+    navigate("/signup");
   };
 
   return (
@@ -26,6 +30,7 @@ export const Mainpage = () => {
           property1="default"
           text="회원가입"
           size="sm"
+          onClick={goToSignup}
         />
       </div>
     </div>

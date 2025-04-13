@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./loginpage.css";
+import "./Loginpage.css";
 
 export const Loginpage = () => {
   const [userType, setUserType] = useState("professor");
@@ -9,6 +9,10 @@ export const Loginpage = () => {
 
   const goToMain = () => {
     navigate("/main");
+  };
+
+  const goToSignup = () => {
+    navigate("/signup");
   };
 
   const handleLogin = () => {
@@ -78,7 +82,7 @@ export const Loginpage = () => {
             <span className="separator">|</span>
             <span>비밀번호 찾기</span>
             <span className="separator">|</span>
-            <span>회원가입</span>
+            <span onClick={goToSignup}>회원가입</span>
           </div>
         </div>
       </div>

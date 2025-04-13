@@ -1,0 +1,33 @@
+/* src/layouts/AuthLayout.css */
+.auth-layout {
+  height: 100vh;
+  background: linear-gradient(
+    118deg,
+    #6397c7 0%,
+    #0d365c 100%
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 15px;
+}
+
+.auth-logo {
+  width: 100%; /* 전체 너비 차지 */
+  padding-left: 60px; /* 항상 왼쪽에서 60px 간격 유지 */
+  text-align: left; /* 텍스트를 왼쪽 정렬 */
+  font-size: 40px;
+  color: #000000;
+  font-family: "ddag", sans-serif;
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  background-color: #fff;
+  padding: 60px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}

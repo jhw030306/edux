@@ -1,0 +1,93 @@
+.signup-title {
+  margin-top: -25px;
+  font-size: 32px;
+  font-weight: bold;
+  color: #0d365c;
+  text-align: center;
+  margin-bottom: 16px;
+  font-family: "Pretendard-Regular", sans-serif;
+}
+
+.signup-radio-group {
+  display: flex;
+  justify-content: center;
+  gap: 150px;
+  margin-bottom: 24px;
+  font-size: 18px;
+  font-family: "Pretendard-Regular", sans-serif;
+}
+
+.signup-form {
+  width: 100%;
+  max-width: 550px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: "Pretendard-Regular", sans-serif;
+}
+
+.form-row-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.form-row label {
+  width: 100px;
+  font-weight: 500;
+  font-size: 16px;
+  color: #0d365c;
+  text-align: right;
+}
+
+.row-with-button {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  max-width: 100%;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: left;
+}
+
+button {
+  padding: 10px 14px;
+  font-size: 16px;
+  background: #0d365c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #16497a;
+}
+
+form button[type="submit"] {
+  margin-top: 20px;
+  font-weight: bold;
+  align-self: center;
+}
+
+.error-msg {
+  color: #e74c3c;
+  text-align: left;
+  font-size: 14px;
+  margin-top: 4px;
+  margin-left: 120px;
+}
