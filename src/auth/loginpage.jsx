@@ -15,6 +15,14 @@ export const Loginpage = () => {
     navigate("/signup");
   };
 
+  const goToIdfind = () => {
+    navigate("/idfind");
+  };
+
+  const goToPwfind = () => {
+    navigate("/pwfind");
+  };
+
   const handleLogin = () => {
     if (userType === "professor") {
       navigate("/professor-dashboard");
@@ -78,9 +86,9 @@ export const Loginpage = () => {
           </button>
 
           <div className="login-actions">
-            <span>아이디 찾기</span>
+            <span onClick={goToIdfind}>아이디 찾기</span>
             <span className="separator">|</span>
-            <span>비밀번호 찾기</span>
+            <span onClick={goToPwfind}>비밀번호 찾기</span>
             <span className="separator">|</span>
             <span onClick={goToSignup}>회원가입</span>
           </div>
