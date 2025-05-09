@@ -6,6 +6,7 @@ import { Idfindpage } from "./auth/Idfind/idfindpage";
 import { Pwfindpage } from "./auth/Pwfind/Pwfindpage";
 import { IdfindResultpage } from "./auth/Idfind/IdfindResult";
 import { PwfindResultpage } from "./auth/Pwfind/PwfindResult";
+import { ProLecturepage } from "./professor/LectureList/LectureList";
 
 function App() {
   return (
@@ -23,6 +24,10 @@ function App() {
       <Route
         path="/pwresult"
         element={<PwfindResultpage />}
+      />
+      <Route
+        path="/prolecture"
+        element={<ProLecturepage />}
       />
     </Routes>
   );
