@@ -7,6 +7,7 @@ import { Pwfindpage } from "./auth/Pwfind/Pwfindpage";
 import { IdfindResultpage } from "./auth/Idfind/IdfindResult";
 import { PwfindResultpage } from "./auth/Pwfind/PwfindResult";
 import { ProLecturepage } from "./professor/LectureList/LectureList";
+import { StuLecturepage } from "./student/LectureList/LectureList";
 
 function App() {
   return (
@@ -28,6 +29,10 @@ function App() {
       <Route
         path="/prolecture"
         element={<ProLecturepage />}
+      />
+      <Route
+        path="/stulecture"
+        element={<StuLecturepage />}
       />
     </Routes>
   );
