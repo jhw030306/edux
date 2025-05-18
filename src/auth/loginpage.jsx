@@ -6,9 +6,14 @@ import "./Loginpage.css";
 export const Loginpage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [userType, setUserType] = useState("professor");
-  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
 
+  const [userType, setUserType] = useState("professor");
+  const [loginForm, setLoginForm] = useState({
+    username: "",
+    password: ""
+  });
+
+  // signup → login 이동 시 학생 탭이 선택되도록
   useEffect(() => {
     if (location.state?.userType === "student") {
       setUserType("student");
@@ -18,6 +23,10 @@ export const Loginpage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setLoginForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleLogin();
   };
 
   const handleLogin = async () => {
@@ -47,7 +56,6 @@ export const Loginpage = () => {
         sessionStorage.setItem("professorId", response.data.id);
         navigate("/prolecture");
       } else {
-        // ✅ 학생일 때: 고유 PK와 로그인 아이디 둘 다 저장
         sessionStorage.setItem("studentId", response.data.id);
         sessionStorage.setItem("studentLoginId", response.data.studentId);
         navigate("/stulecture");
@@ -56,10 +64,6 @@ export const Loginpage = () => {
       console.error("로그인 실패", error);
       alert("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleLogin();
   };
 
   const goTo = (path) => navigate(path);
@@ -95,23 +99,30 @@ export const Loginpage = () => {
         </div>
 
         <div className="login-form">
-          <input
-            className="input-id"
-            placeholder="아이디"
-            name="username"
-            value={loginForm.username}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-          />
-          <input
-            className="input-password"
-            type="password"
-            placeholder="비밀번호"
-            name="password"
-            value={loginForm.password}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-          />
+          <div className="input-group">
+            <input
+              type="text"
+              className="input-id"
+              placeholder="아이디"
+              name="username"
+              value={loginForm.username}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
+
+          <div className="input-group">
+            <input
+              type="password"
+              className="input-password"
+              placeholder="비밀번호"
+              name="password"
+              value={loginForm.password}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
+
           <button className="login-button" onClick={handleLogin}>
             로그인
           </button>
@@ -121,7 +132,9 @@ export const Loginpage = () => {
             <span className="separator">|</span>
             <span onClick={() => goTo("/pwfind")}>비밀번호 찾기</span>
             <span className="separator">|</span>
-            <span onClick={() => goTo("/signup")}>회원가입</span>
+            <span onClick={() => goTo("/signup", { state: { userType } })}>
+              회원가입
+            </span>
           </div>
         </div>
       </div>
