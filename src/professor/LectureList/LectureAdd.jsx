@@ -67,7 +67,7 @@ export const LectureAdd = ({
       if (editMode && initialData.id) {
         // ✅ 수정 요청
         const response = await axios.put(
-          `http://localhost:8080/api/classrooms/${initialData.id}`,
+          `/api/classrooms/${initialData.id}`,
           {
             className: title,
             section: section,
@@ -86,7 +86,7 @@ export const LectureAdd = ({
       } else {
         // ✅ 새로 생성
         const response = await axios.post(
-          "http://localhost:8080/api/classrooms",
+          "/api/classrooms",
           {
             className: title,
             section: section,

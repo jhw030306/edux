@@ -35,12 +35,12 @@ export const ProLecturepage = () => {
 
     try {
       // 교수 정보 조회
-      const profRes = await axios.get(`http://localhost:8080/api/classrooms/professor/${professorId}`);
+      const profRes = await axios.get(`/api/classrooms/professor/${professorId}`);
       const { name, email, department } = profRes.data;
       setProfessorInfo({ name, email, department });
 
       // 강의실 목록 조회
-      const lectureRes = await axios.get(`http://localhost:8080/api/classrooms/professor/${professorId}/classrooms`);
+      const lectureRes = await axios.get(`/api/classrooms/professor/${professorId}/classrooms`);
 
       // ✅ 필드명 매핑: className → title, time → schedule
       const mappedLectures = lectureRes.data.map((lecture) => ({

@@ -1,10 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react"; 
 import axios from "axios";
 import "./Loginpage.css";
 
+
 export const Loginpage = () => {
+  const location = useLocation();
   const [userType, setUserType] = useState("professor");
+
+  useEffect(() => {
+    if (location.state?.userType === "student") {
+      setUserType("student");
+    }
+  }, [location.state]);
 
   const [loginForm, setLoginForm] = useState({
     username: "",

@@ -3,7 +3,7 @@ import axios from "axios";
 export const LectureDelete = ({ lecture, onConfirm, onCancel }) => {
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://localhost:8080/api/classrooms/${lecture.id}`);
+      await axios.delete(`/api/classrooms/${lecture.id}`);
       alert("강의실이 삭제되었습니다.");
       onConfirm(); // 프론트 목록에서 삭제 반영
     } catch (error) {
