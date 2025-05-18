@@ -61,7 +61,7 @@ export const Loginpage = () => {
         });
   
         alert("로그인 성공!");
-        navigate("/professor-dashboard");
+        navigate("/prolecture");
       } catch (error) {
         alert("로그인 실패: " + (error.response?.data || error.message));
       }
