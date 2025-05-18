@@ -9,11 +9,13 @@ export const IdfindResultpage = ({ className }) => {
   const goToMain = () => {
     navigate("/main");
   };
+  
   const {
     name,
     email,
     foundIds = [],
   } = location.state || {};
+  
   const [selectedId, setSelectedId] = useState("");
 
   const handlePasswordFind = () => {
