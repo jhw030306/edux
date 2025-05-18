@@ -6,7 +6,6 @@ import "./Loginpage.css";
 export const Loginpage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const [userType, setUserType] = useState("professor");
 
   useEffect(() => {
@@ -56,19 +55,18 @@ export const Loginpage = () => {
       alert("로그인 성공!");
 
       if (userType === "professor") {
-        sessionStorage.setItem("professorId", response.data.id); // ✅ 세션스토리지 사용
+        sessionStorage.setItem("professorId", response.data.id);
         navigate("/prolecture");
       } else {
-        sessionStorage.setItem("studentId", response.data.id); // ✅ 세션스토리지 사용
+        sessionStorage.setItem("studentId", response.data.id); // ✅ 고유 ID 저장
         navigate("/stulecture");
       }
     } catch (error) {
       console.error("로그인 실패", error);
-      alert("아이디 또는 비밀번호가 올바르지 않습니다."); // ✅ 고정 메시지
+      alert("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
   };
 
-  // ✅ Enter 키로 로그인 실행
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleLogin();
@@ -80,9 +78,7 @@ export const Loginpage = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-        <div className="login-title" onClick={() => goTo("/main")}>
-          EduX
-        </div>
+        <div className="login-title" onClick={() => goTo("/main")}>EduX</div>
 
         <div className="login-radio-group">
           <label className="radio-option">
@@ -116,10 +112,9 @@ export const Loginpage = () => {
               name="username"
               value={loginForm.username}
               onChange={handleInputChange}
-              onKeyDown={handleKeyDown} // ✅ Enter 키 적용
+              onKeyDown={handleKeyDown}
             />
           </div>
-
           <div className="input-group">
             <input
               type="password"
@@ -128,13 +123,10 @@ export const Loginpage = () => {
               name="password"
               value={loginForm.password}
               onChange={handleInputChange}
-              onKeyDown={handleKeyDown} // ✅ Enter 키 적용
+              onKeyDown={handleKeyDown}
             />
           </div>
-
-          <button className="login-button" onClick={handleLogin}>
-            로그인
-          </button>
+          <button className="login-button" onClick={handleLogin}>로그인</button>
 
           <div className="login-actions">
             <span onClick={() => goTo("/idfind")}>아이디 찾기</span>
