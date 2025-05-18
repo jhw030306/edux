@@ -146,22 +146,31 @@ const SignupProf = () => {
       return alert("비밀번호가 일치하지 않습니다.");
     if (!codeConfirmed)
       return alert("이메일 인증을 완료해주세요.");
+
     try {
-      const response = await axios.post("/api/professors/register", {
-        username: form.username,
-        password: form.password,
-        name: form.name,
-        school: form.school,
-        department: form.department,
-        email: form.email,
-      });
+      const response = await axios.post(
+        "/api/professors/register",
+        {
+          username: form.username,
+          password: form.password,
+          name: form.name,
+          school: form.school,
+          department: form.department,
+          email: form.email,
+        },
+        {
+          withCredentials: true, // ✅ 핵심: 인증 정보 포함 (세션/쿠키 대응)
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
       alert("회원가입이 완료되었습니다!: " + response.data);
       navigate("/login");
     } catch (error) {
       alert("회원가입이 실패했습니다!: " + (error.response?.data || error.message));
-    }
-  };
+    }};
   //   alert("회원가입이 완료되었습니다!");
   //   console.log("가입정보:", form);
   // };
