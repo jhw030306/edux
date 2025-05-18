@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import "./Signuppage.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const SignupProf = () => {
   const [form, setForm] = useState({
@@ -13,6 +15,7 @@ const SignupProf = () => {
     code: "",
   });
 
+  const navigate = useNavigate();
   const [idChecked, setIdChecked] = useState(false);
   const [codeConfirmed, setCodeConfirmed] = useState(false);
   const [sentCode, setSentCode] = useState(""); // ✅ 전송된 인증번호 저장
