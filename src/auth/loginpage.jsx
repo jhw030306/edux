@@ -7,17 +7,13 @@ export const Loginpage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userType, setUserType] = useState("professor");
+  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
 
   useEffect(() => {
     if (location.state?.userType === "student") {
       setUserType("student");
     }
   }, [location.state]);
-
-  const [loginForm, setLoginForm] = useState({
-    username: "",
-    password: ""
-  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -30,26 +26,19 @@ export const Loginpage = () => {
       return;
     }
 
-    const url = userType === "professor"
-      ? "/api/professors/login"
-      : "/api/students/login";
-
-    const payload = userType === "professor"
-      ? {
-          username: loginForm.username,
-          password: loginForm.password
-        }
-      : {
-          studentId: loginForm.username,
-          password: loginForm.password
-        };
+    const url =
+      userType === "professor"
+        ? "/api/professors/login"
+        : "/api/students/login";
+    const payload =
+      userType === "professor"
+        ? { username: loginForm.username, password: loginForm.password }
+        : { studentId: loginForm.username, password: loginForm.password };
 
     try {
       const response = await axios.post(url, payload, {
         withCredentials: true,
-        headers: {
-          "Content-Type": "application/json"
-        }
+        headers: { "Content-Type": "application/json" },
       });
 
       alert("로그인 성공!");
@@ -58,7 +47,9 @@ export const Loginpage = () => {
         sessionStorage.setItem("professorId", response.data.id);
         navigate("/prolecture");
       } else {
-        sessionStorage.setItem("studentId", response.data.id); // ✅ 고유 ID 저장
+        // ✅ 학생일 때: 고유 PK와 로그인 아이디 둘 다 저장
+        sessionStorage.setItem("studentId", response.data.id);
+        sessionStorage.setItem("studentLoginId", response.data.studentId);
         navigate("/stulecture");
       }
     } catch (error) {
@@ -68,9 +59,7 @@ export const Loginpage = () => {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleLogin();
-    }
+    if (e.key === "Enter") handleLogin();
   };
 
   const goTo = (path) => navigate(path);
@@ -78,7 +67,9 @@ export const Loginpage = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-        <div className="login-title" onClick={() => goTo("/main")}>EduX</div>
+        <div className="login-title" onClick={() => goTo("/main")}>
+          EduX
+        </div>
 
         <div className="login-radio-group">
           <label className="radio-option">
@@ -104,29 +95,26 @@ export const Loginpage = () => {
         </div>
 
         <div className="login-form">
-          <div className="input-group">
-            <input
-              type="text"
-              className="input-id"
-              placeholder="아이디"
-              name="username"
-              value={loginForm.username}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-            />
-          </div>
-          <div className="input-group">
-            <input
-              type="password"
-              className="input-password"
-              placeholder="비밀번호"
-              name="password"
-              value={loginForm.password}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-            />
-          </div>
-          <button className="login-button" onClick={handleLogin}>로그인</button>
+          <input
+            className="input-id"
+            placeholder="아이디"
+            name="username"
+            value={loginForm.username}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+          />
+          <input
+            className="input-password"
+            type="password"
+            placeholder="비밀번호"
+            name="password"
+            value={loginForm.password}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+          />
+          <button className="login-button" onClick={handleLogin}>
+            로그인
+          </button>
 
           <div className="login-actions">
             <span onClick={() => goTo("/idfind")}>아이디 찾기</span>
