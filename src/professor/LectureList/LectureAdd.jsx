@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./LectureList.css";
+import axios from "axios";
 
 export const LectureAdd = ({
   onClose,
@@ -39,7 +40,7 @@ export const LectureAdd = ({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
     const { title, section, day, startTime, endTime } =
       form;
     if (
@@ -52,11 +53,64 @@ export const LectureAdd = ({
       alert("모든 항목을 입력해주세요.");
       return;
     }
-    const schedule = `${day} ${startTime} ~ ${endTime}`;
-    const result = { ...form, schedule };
-    onSubmit(result);
-  };
 
+    const professorId = localStorage.getItem("professorId");
+    if (!professorId) {
+      alert("로그인 정보가 없습니다.");
+      return;
+    }
+    
+    const schedule = `${day} ${startTime} ~ ${endTime}`;
+  //   const result = { ...form, schedule };
+  //   onSubmit(result);
+    try {
+      if (editMode && initialData.id) {
+        // ✅ 수정 요청
+        const response = await axios.put(
+          `http://localhost:8080/api/classrooms/${initialData.id}`,
+          {
+            className: title,
+            section: section,
+            time: schedule,
+          },
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        alert("강의실이 수정되었습니다.");
+        const updated = {
+          ...response.data,
+          title: response.data.className,
+          schedule: response.data.time,
+        };
+        onSubmit(updated); // 프론트에서 업데이트 반영
+      } else {
+        // ✅ 새로 생성
+        const response = await axios.post(
+          "http://localhost:8080/api/classrooms",
+          {
+            className: title,
+            section: section,
+            time: schedule,
+            professorId: professorId,
+          },
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        alert("강의실이 생성되었습니다.");
+        const newLecture = {
+          ...response.data,
+          title: response.data.className,
+          schedule: response.data.time,
+        };
+        onSubmit(newLecture);
+      }
+    } catch (error) {
+      console.error("강의실 처리 실패:", error.response?.data || error.message);
+      alert("처리에 실패했습니다.");
+    }
+
+    onClose();
+  };
   return (
     <div className="modal">
       <div className="modal-box">

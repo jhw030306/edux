@@ -61,6 +61,7 @@ export const Loginpage = () => {
         });
   
         alert("로그인 성공!");
+        localStorage.setItem("professorId", response.data.id);
         navigate("/prolecture");
       } catch (error) {
         alert("로그인 실패: " + (error.response?.data || error.message));

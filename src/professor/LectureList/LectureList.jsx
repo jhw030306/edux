@@ -1,31 +1,74 @@
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
 import { useNavigate } from "react-router-dom";
 import { LectureCard } from "./LectureCard";
 import { LectureAdd } from "./LectureAdd";
 import { LectureDelete } from "./LectureDelete";
 import "./LectureList.css";
+import axios from "axios";
+
 
 export const ProLecturepage = () => {
   const navigate = useNavigate();
-  const goToMain = () => {
-    navigate("/main");
-  };
-
-  const goToLogin = () => {
-    navigate("/login");
-  };
-
   const [lectures, setLectures] = useState([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
-  const [selectedLecture, setSelectedLecture] =
-    useState(null);
+  const [selectedLecture, setSelectedLecture] = useState(null);
+  
+  const [professorInfo, setProfessorInfo] = useState({
+  name: "",
+  email: "",
+  department: "",
+});
+
+  const goToLogin = () => {
+    navigate("/login");
+  };
+  const goToMain = () => {
+    navigate("/main")
+  };
+
+  useEffect(() => {
+  const fetchProfessorAndClassrooms = async () => {
+    const professorId = localStorage.getItem("professorId");
+    if (!professorId) return;
+
+    try {
+      // 교수 정보 조회
+      const profRes = await axios.get(`http://localhost:8080/api/classrooms/professor/${professorId}`);
+      const { name, email, department } = profRes.data;
+      setProfessorInfo({ name, email, department });
+
+      // 강의실 목록 조회
+      const lectureRes = await axios.get(`http://localhost:8080/api/classrooms/professor/${professorId}/classrooms`);
+
+      // ✅ 필드명 매핑: className → title, time → schedule
+      const mappedLectures = lectureRes.data.map((lecture) => ({
+        ...lecture,
+        title: lecture.className,
+        schedule: lecture.time,
+      }));
+
+      setLectures(mappedLectures);
+    } catch (error) {
+      console.error("데이터 불러오기 실패:", error);
+    }
+  };
+
+  fetchProfessorAndClassrooms();
+}, []);
+
+
 
   const handleAddLecture = (newLecture) => {
-    setLectures([...lectures, newLecture]);
-    setIsAddOpen(false);
+  const lectureWithMappedFields = {
+    ...newLecture,
+    title: newLecture.className,   // 강의명
+    schedule: newLecture.time,     // 시간
   };
+  setLectures([...lectures, lectureWithMappedFields]);
+  setIsAddOpen(false);
+};
 
   const handleEdit = (lecture, index) => {
     setSelectedLecture({ ...lecture, index });
@@ -65,10 +108,10 @@ export const ProLecturepage = () => {
           [ 로그아웃 ]
         </p>
         <div className="name">
-          홍길동 <span className="thin">교수님</span>
+          {professorInfo.name} <span className="thin">교수님</span>
         </div>
-        <div className="dept">컴퓨터공학과</div>
-        <div className="email">abc1234@gmail.com</div>
+        <div className="dept">{professorInfo.department}</div>
+        <div className="email">{professorInfo.email}</div>
       </aside>
 
       <main className="main">

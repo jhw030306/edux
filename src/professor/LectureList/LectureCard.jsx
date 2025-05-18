@@ -1,6 +1,6 @@
 export const LectureCard = ({
   title,
-  authCode,
+  accessCode,
   section,
   schedule,
   onEdit,
@@ -26,7 +26,7 @@ export const LectureCard = ({
         </div>
       </div>
       <div className="card-body">
-        <p className="auth">인증코드 : {authCode}</p>
+        <p className="auth">인증코드 : {accessCode}</p>
         <div className="bottom-info">
           <span>{section}</span>
           <span>{schedule}</span>
