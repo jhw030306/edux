@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react"; 
 import axios from "axios";
 import "./Loginpage.css";
 
-
 export const Loginpage = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+
   const [userType, setUserType] = useState("professor");
 
   useEffect(() => {
@@ -20,70 +20,67 @@ export const Loginpage = () => {
     password: ""
   });
 
-  const navigate = useNavigate();
-
-  const goToMain = () => {
-    navigate("/main");
-  };
-
-  const goToSignup = () => {
-    navigate("/signup");
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setLoginForm((prev) => ({ ...prev, [name]: value }));
   };
-
-  const goToIdfind = () => {
-    navigate("/idfind");
-  };
-
-  const goToPwfind = () => {
-    navigate("/pwfind");
-  };
-
-  // const handleLogin = () => {
-  //   if (userType === "professor") {
-  //     navigate("/prolecture");
-  //   } else if (userType === "student") {
-  //     navigate("/stulecture");
-  //   }
-  // };
 
   const handleLogin = async () => {
     if (!loginForm.username || !loginForm.password) {
       alert("아이디와 비밀번호를 모두 입력해주세요.");
       return;
     }
-  
-    if (userType === "professor") {
-      try {
-        const response = await axios.post("/api/professors/login", {
+
+    const url = userType === "professor"
+      ? "/api/professors/login"
+      : "/api/students/login";
+
+    const payload = userType === "professor"
+      ? {
           username: loginForm.username,
           password: loginForm.password
-        }, {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
-  
-        alert("로그인 성공!");
-        localStorage.setItem("professorId", response.data.id);
+        }
+      : {
+          studentId: loginForm.username,
+          password: loginForm.password
+        };
+
+    try {
+      const response = await axios.post(url, payload, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      alert("로그인 성공!");
+
+      if (userType === "professor") {
+        sessionStorage.setItem("professorId", response.data.id); // ✅ 세션스토리지 사용
         navigate("/prolecture");
-      } catch (error) {
-        alert("로그인 실패: " + (error.response?.data || error.message));
+      } else {
+        sessionStorage.setItem("studentId", response.data.id); // ✅ 세션스토리지 사용
+        navigate("/stulecture");
       }
-    } else if (userType === "student") {
-      alert("학생 로그인은 아직 준비 중입니다!");
+    } catch (error) {
+      console.error("로그인 실패", error);
+      alert("아이디 또는 비밀번호가 올바르지 않습니다."); // ✅ 고정 메시지
     }
   };
+
+  // ✅ Enter 키로 로그인 실행
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleLogin();
+    }
+  };
+
+  const goTo = (path) => navigate(path);
 
   return (
     <div className="login-page">
       <div className="login-container">
-        <div className="login-title" onClick={goToMain}>
+        <div className="login-title" onClick={() => goTo("/main")}>
           EduX
         </div>
 
@@ -119,6 +116,7 @@ export const Loginpage = () => {
               name="username"
               value={loginForm.username}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown} // ✅ Enter 키 적용
             />
           </div>
 
@@ -130,22 +128,20 @@ export const Loginpage = () => {
               name="password"
               value={loginForm.password}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown} // ✅ Enter 키 적용
             />
           </div>
 
-          <button
-            className="login-button"
-            onClick={handleLogin}
-          >
+          <button className="login-button" onClick={handleLogin}>
             로그인
           </button>
 
           <div className="login-actions">
-            <span onClick={goToIdfind}>아이디 찾기</span>
+            <span onClick={() => goTo("/idfind")}>아이디 찾기</span>
             <span className="separator">|</span>
-            <span onClick={goToPwfind}>비밀번호 찾기</span>
+            <span onClick={() => goTo("/pwfind")}>비밀번호 찾기</span>
             <span className="separator">|</span>
-            <span onClick={goToSignup}>회원가입</span>
+            <span onClick={() => goTo("/signup")}>회원가입</span>
           </div>
         </div>
       </div>
