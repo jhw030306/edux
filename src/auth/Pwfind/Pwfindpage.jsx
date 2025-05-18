@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Pwfindpage.css";
+import axios from "axios";
 
 export const Pwfindpage = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export const Pwfindpage = () => {
     alert(`인증번호 발송 완료 (모의): ${code}`);
   };
 
-  const handleNext = () => {
+  const handleNext = async() => {
     if (
       !inputId.trim() ||
       !inputEmail.trim() ||
@@ -43,13 +44,25 @@ export const Pwfindpage = () => {
       return;
     }
 
+    try {
+    const response = await axios.get("/api/professors/verify-password-reset", {
+      params: {
+        username: inputId,
+        email: inputEmail
+      },
+      withCredentials: true
+    });
+
     navigate("/pwresult", {
       state: {
-        id: inputId, // 수정된 inputId 넘기기
-        email: inputEmail,
-      },
+        username: inputId,
+        email: inputEmail
+      }
     });
-  };
+  } catch (error) {
+    alert("일치하는 사용자 정보를 찾을 수 없습니다.");
+  }
+};
 
   return (
     <div className="pwfind-page">
