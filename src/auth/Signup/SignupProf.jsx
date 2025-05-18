@@ -75,7 +75,7 @@ const SignupProf = () => {
     }
   };
 
-  const checkId = () => {
+  const checkId = async() => {
     if (!form.username.trim()) {
       setErrors((prev) => ({
         ...prev,
@@ -83,8 +83,21 @@ const SignupProf = () => {
       }));
       return;
     }
-    alert("사용 가능한 아이디입니다.");
-    setIdChecked(true);
+    try {
+      const response = await axios.get("/api/professors/check-username", {
+        params: { username: form.username },
+      });
+
+      if (response.data) {
+        alert("이미 사용 중인 아이디입니다.");
+        setIdChecked(false);
+      } else {
+        alert("사용 가능한 아이디입니다!");
+        setIdChecked(true);
+      }
+    } catch (error) {
+      alert("중복 확인 실패: " + (error.response?.data || error.message));
+    }
   };
 
   const sendVerification = () => {
@@ -116,7 +129,7 @@ const SignupProf = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
     for (const key in form) {
@@ -133,10 +146,25 @@ const SignupProf = () => {
       return alert("비밀번호가 일치하지 않습니다.");
     if (!codeConfirmed)
       return alert("이메일 인증을 완료해주세요.");
+    try {
+      const response = await axios.post("/api/professors/register", {
+        username: form.username,
+        password: form.password,
+        name: form.name,
+        school: form.school,
+        department: form.department,
+        email: form.email,
+      });
 
-    alert("회원가입이 완료되었습니다!");
-    console.log("가입정보:", form);
+      alert("회원가입이 완료되었습니다!: " + response.data);
+      navigate("/login");
+    } catch (error) {
+      alert("회원가입이 실패했습니다!: " + (error.response?.data || error.message));
+    }
   };
+  //   alert("회원가입이 완료되었습니다!");
+  //   console.log("가입정보:", form);
+  // };
 
   const renderInputRow = (
     label,
