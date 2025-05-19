@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./PwfindResultpage.css";
 import { Button } from "../../components/Button";
+import axios from "axios";
 
 export const PwfindResultpage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { id = "", email = "" } = location.state || {};
+  // const { id = "", email = "" } = location.state || {};
+  const { username: id = "", email = "" } = location.state || {};
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
@@ -30,7 +32,7 @@ export const PwfindResultpage = () => {
     return passwordRegex.test(password);
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async() => {
     if (!id || !email) {
       setErrorMsg("등록된 회원정보가 없습니다.");
       return;
@@ -53,9 +55,20 @@ export const PwfindResultpage = () => {
       return;
     }
 
+    try {
+    await axios.post("/api/professors/reset-password", {
+      username: id,
+      newPassword: newPassword
+    }, {
+      withCredentials: true
+    });
+
     alert("비밀번호가 성공적으로 변경되었습니다!");
     navigate("/login");
-  };
+  } catch (error) {
+    alert("비밀번호 변경에 실패했습니다: " + (error.response?.data || error.message));
+  }
+};
 
   return (
     <div className="pwfind-result-page">

@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import "./Signuppage.css";
+import { useNavigate } from "react-router-dom"; 
 
 const SignupStu = () => {
+  const navigate = useNavigate(); 
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -71,7 +73,7 @@ const SignupStu = () => {
     }
   };
 
-  const checkId = () => {
+  const checkId = async () => {
     if (!form.username.trim()) {
       setErrors((prev) => ({
         ...prev,
@@ -79,9 +81,31 @@ const SignupStu = () => {
       }));
       return;
     }
-    alert("사용 가능한 아이디입니다.");
-    setIdChecked(true);
+  
+    try {
+      const response = await fetch(`/api/students/check-id?studentId=${form.username}`, {
+        method: "GET",
+      });
+  
+      if (!response.ok) {
+        throw new Error("서버 오류 발생");
+      }
+  
+      const isDuplicate = await response.json(); // 서버에서 true 또는 false가 옴
+  
+      if (isDuplicate) {
+        alert("이미 사용 중인 아이디입니다.");
+        setIdChecked(false);
+      } else {
+        alert("사용 가능한 아이디입니다!");
+        setIdChecked(true);
+      }
+    } catch (error) {
+      console.error("ID 중복 확인 에러:", error);
+      alert("아이디 중복 확인 중 오류가 발생했습니다.");
+    }
   };
+  
 
   const sendVerification = () => {
     if (!emailRegex.test(form.email)) {
@@ -112,7 +136,7 @@ const SignupStu = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     for (const key in form) {
@@ -130,8 +154,33 @@ const SignupStu = () => {
     if (!codeConfirmed)
       return alert("이메일 인증을 완료해주세요.");
 
-    alert("회원가입이 완료되었습니다!");
-    console.log("가입정보:", form);
+  try {
+    const response = await fetch("/api/students/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        studentId: form.username,   // 서버는 studentId를 원함
+        password: form.password,
+        name: form.name,
+        email: form.email,
+        studentNumber: parseInt(form.studentId),
+      }),
+    });
+
+    if (response.ok) {
+      alert("회원가입이 완료되었습니다!");
+      console.log("가입정보:", form);
+      navigate("/login", { state: { userType: "student" } });
+    } else {
+      const errorData = await response.text();
+      alert("회원가입 실패: " + errorData);
+    }
+  } catch (error) {
+    console.error("회원가입 요청 에러:", error);
+    alert("서버 오류가 발생했습니다.");
+  }
   };
 
   const renderInputRow = (

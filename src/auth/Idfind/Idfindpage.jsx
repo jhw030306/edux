@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Idfindpage.css";
+import axios from "axios";
 
 export const Idfindpage = () => {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export const Idfindpage = () => {
     alert(`인증번호 발송 완료 (모의): ${code}`);
   };
 
-  const handleNext = () => {
+  const handleNext = async() => {
     if (
       !name.trim() ||
       !email.trim() ||
@@ -35,13 +36,37 @@ export const Idfindpage = () => {
       alert("모든 항목을 입력해주세요.");
       return;
     }
-    if (verificationCode !== sentCode) {
-      alert("인증번호가 일치하지 않습니다.");
-      return;
+  //   if (verificationCode !== sentCode) {
+  //     alert("인증번호가 일치하지 않습니다.");
+  //     return;
+  //   }
+  //   navigate("/idresult", {
+  //     state: { name, email },
+  //   });
+  // };
+
+  try {
+      // 서버에 이름+이메일로 아이디 요청
+      const response = await axios.get("/api/professors/find-id", {
+        params: { name, email },
+        withCredentials: true, // 세션 유지가 필요할 경우
+      });
+
+      const foundUsername = response.data; // 예: "prof123"
+
+      // 아이디 결과 페이지로 이동 (배열로 넘겨야 하니까 감싸줌)
+      navigate("/idresult", {
+        state: {
+          name,
+          email,
+          foundIds: [
+            { id: foundUsername, role: "교수" }
+          ]
+        }
+      });
+    } catch (error) {
+      alert("일치하는 아이디를 찾을 수 없습니다.");
     }
-    navigate("/idresult", {
-      state: { name, email },
-    });
   };
 
   return (

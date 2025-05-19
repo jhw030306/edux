@@ -1,52 +1,67 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
 import { LectureCard } from "./LectureCard";
 import { LectureEnter } from "./LectureEnter";
+import { useNavigate } from "react-router-dom";
 import "./LectureList.css";
 
 export const StuLecturepage = () => {
   const navigate = useNavigate();
-  const goToMain = () => {
-    navigate("/main");
-  };
-
-  const goToLogin = () => {
-    navigate("/login");
-  };
 
   const [lectures, setLectures] = useState([]);
   const [isEnterOpen, setIsEnterOpen] = useState(false);
 
-  const codeDatabase = {
-    515279: {
-      title: "캡스톤디자인",
-      authCode: "515279",
-      section: "1분반",
-      schedule: "월요일 14:00 ~ 16:00",
-    },
-    999888: {
-      title: "웹프로그래밍",
-      authCode: "999888",
-      section: "2분반",
-      schedule: "화요일 10:00 ~ 12:00",
-    },
-  };
+  const studentLoginId = sessionStorage.getItem("studentLoginId");
+  const studentPk      = sessionStorage.getItem("studentId");
 
-  const handleAddLectureByCode = (code) => {
-    const lecture = codeDatabase[code];
-    if (lecture) {
-      const isAlreadyAdded = lectures.some(
-        (l) => l.authCode === lecture.authCode
-      );
-      if (!isAlreadyAdded) {
-        setLectures([...lectures, lecture]);
-        setIsEnterOpen(false);
-      } else {
-        alert("이미 추가된 강의입니다.");
-      }
-    } else {
-      alert("유효하지 않은 인증코드입니다.");
+  const [studentInfo, setStudentInfo] = useState({
+    studentNumber: "",
+    name: "",
+    phoneNumber: "",
+  });
+
+  // 전체 강의 목록 로드 함수
+  const loadLectures = useCallback(() => {
+    fetch(`/api/student-classrooms/${studentLoginId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("강의 목록 불러오기 실패");
+        return res.json();
+      })
+      .then((data) => setLectures(data))
+      .catch((err) => console.error("강의 목록 에러:", err));
+  }, [studentLoginId]);
+
+  useEffect(() => {
+    if (!studentLoginId || !studentPk) {
+      alert("로그인이 필요합니다.");
+      navigate("/login");
+      return;
     }
+    loadLectures();
+
+    fetch(`/api/students/${studentPk}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("학생 정보 불러오기 실패");
+        return res.json();
+      })
+      .then((data) =>
+        setStudentInfo({
+          studentNumber: data.studentNumber,
+          name:          data.name,
+          phoneNumber:   data.phoneNumber,
+        })
+      )
+      .catch((err) => console.error("학생 정보 에러:", err));
+  }, [studentLoginId, studentPk, navigate, loadLectures]);
+
+  const handleLogout = async () => {
+    await fetch("/api/students/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    sessionStorage.removeItem("studentLoginId");
+    sessionStorage.removeItem("studentId");
+    alert("로그아웃 되었습니다.");
+    navigate("/login");
   };
 
   return (
@@ -56,20 +71,30 @@ export const StuLecturepage = () => {
           EduX
         </h1>
         <div className="avatar" />
-        <p className="logout" onClick={goToLogin}>
+        <p className="logout" onClick={handleLogout}>
+
+
           [ 로그아웃 ]
         </p>
         <div className="name">
-          12345678 <span className="thin">김학생</span>
+          {studentInfo.studentNumber}{" "}
+          <span className="thin">{studentInfo.name}</span>
         </div>
-        <div className="email">abc1234@gmail.com</div>
+        <div className="email">{studentInfo.phoneNumber}</div>
       </aside>
 
       <main className="main">
         <div className="card-grid">
-          {lectures.map((lecture, idx) => (
-            <LectureCard key={idx} {...lecture} />
+          {lectures.map((lec) => (
+            <LectureCard
+              key={lec.id}
+              title={lec.className}
+              authCode={lec.accessCode}
+              section={lec.section}
+              schedule={lec.time}
+            />
           ))}
+
           <div
             className="card add-card"
             onClick={() => setIsEnterOpen(true)}
@@ -82,7 +107,11 @@ export const StuLecturepage = () => {
       {isEnterOpen && (
         <LectureEnter
           onClose={() => setIsEnterOpen(false)}
-          onSubmit={handleAddLectureByCode}
+          onSubmit={async (newLecture) => {
+            // 1) 새로고침 없이 전체 목록 다시 로드
+            await loadLectures();
+            setIsEnterOpen(false);
+          }}
         />
       )}
     </div>
