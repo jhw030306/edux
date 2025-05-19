@@ -50,6 +50,7 @@ export const Loginpage = () => {
         headers: { "Content-Type": "application/json" },
       });
 
+
       alert("로그인 성공!");
 
       if (userType === "professor") {

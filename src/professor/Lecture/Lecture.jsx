@@ -1,0 +1,145 @@
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { MainLayout } from "../../layout/MainLayout";
+import { ExamDelete } from "./ExamDelete";
+import "./Lecture.css";
+
+export const ProLecture = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const goToExam = () => {
+    navigate("/exameditor");
+  };
+  const _lecture = location.state?.lecture;
+
+  const [exams, setExams] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [tempName, setTempName] = useState("");
+
+  const [showDeleteModal, setShowDeleteModal] =
+    useState(false);
+  const [examToDelete, setExamToDelete] = useState(null);
+
+  const handleAddExam = () => {
+    setExams([...exams, { name: "" }]);
+    setEditingIndex(exams.length);
+    setTempName("");
+  };
+
+  const handleNameChange = (e) => {
+    setTempName(e.target.value);
+  };
+
+  const handleNameConfirm = () => {
+    if (tempName.trim() === "") return;
+    const updated = [...exams];
+    updated[editingIndex].name = tempName;
+    setExams(updated);
+    setEditingIndex(null);
+    setTempName("");
+  };
+
+  const handleDeleteClick = (idx) => {
+    setExamToDelete({ idx, name: exams[idx].name });
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    const updated = exams.filter(
+      (_, i) => i !== examToDelete.idx
+    );
+    setExams(updated);
+    setShowDeleteModal(false);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+
+  return (
+    <MainLayout>
+      <div className="page-content">
+        {/* 학생 관리 섹션 */}
+        <div className="section-box">
+          <div className="section-title">학생</div>
+          <div className="section-actions">
+            <button className="action-button">
+              학생 관리
+            </button>
+            <button className="action-button">
+              로그 관리
+            </button>
+          </div>
+        </div>
+
+        {/* 시험 목록 */}
+        {exams.map((exam, idx) => (
+          <div className="section-box" key={idx}>
+            <div className="section-title">
+              {editingIndex === idx ? (
+                <input
+                  className="exam-input"
+                  value={tempName}
+                  onChange={handleNameChange}
+                  onBlur={handleNameConfirm}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handleNameConfirm()
+                  }
+                  autoFocus
+                />
+              ) : (
+                <>
+                  {exam.name}
+                  <span className="icon-buttons">
+                    <img
+                      src="/edit2.png"
+                      alt="edit"
+                      onClick={() => {
+                        setEditingIndex(idx);
+                        setTempName(exam.name);
+                      }}
+                    />
+                    <img
+                      src="/delete2.png"
+                      alt="delete"
+                      onClick={() => handleDeleteClick(idx)}
+                    />
+                  </span>
+                </>
+              )}
+            </div>
+            <div className="section-actions">
+              <button
+                className="action-button"
+                onClick={goToExam}
+              >
+                시험 입력
+              </button>
+              <button className="action-button">
+                시험 채점
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* 시험 추가 버튼 */}
+        <div
+          className="add-section"
+          onClick={handleAddExam}
+        >
+          +
+        </div>
+
+        {/* 삭제 모달 */}
+        {showDeleteModal && (
+          <ExamDelete
+            exam={examToDelete}
+            onConfirm={handleConfirmDelete}
+            onCancel={handleCancelDelete}
+          />
+        )}
+      </div>
+    </MainLayout>
+  );
+};

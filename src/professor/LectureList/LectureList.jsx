@@ -58,8 +58,6 @@ export const ProLecturepage = () => {
   fetchProfessorAndClassrooms();
 }, []);
 
-
-
   const handleAddLecture = (newLecture) => {
   const lectureWithMappedFields = {
     ...newLecture,
@@ -120,6 +118,7 @@ export const ProLecturepage = () => {
             <LectureCard
               key={idx}
               {...lecture}
+              onClick={() => goToLecture(lecture)}
               onEdit={() => handleEdit(lecture, idx)}
               onDelete={() => handleDelete(lecture, idx)}
             />
