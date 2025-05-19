@@ -47,20 +47,21 @@ const ExamEditor = () => {
           <div className="tabs">
             <button
               className={
-                activeTab === "questions" ? "active" : ""
-              }
-              onClick={() => setActiveTab("questions")}
-            >
-              시험 작성
-            </button>
-            <button
-              className={
                 activeTab === "settings" ? "active" : ""
               }
               onClick={() => setActiveTab("settings")}
             >
               시험 설정
             </button>
+            <button
+              className={
+                activeTab === "questions" ? "active" : ""
+              }
+              onClick={() => setActiveTab("questions")}
+            >
+              시험 작성
+            </button>
+
             <button
               className={
                 activeTab === "access" ? "active" : ""
