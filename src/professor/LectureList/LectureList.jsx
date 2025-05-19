@@ -15,6 +15,10 @@ export const ProLecturepage = () => {
     navigate("/login");
   };
 
+  const goToLecture = (lecture) => {
+    navigate("/prolecture", { state: { lecture } });
+  };
+
   const [lectures, setLectures] = useState([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -77,6 +81,7 @@ export const ProLecturepage = () => {
             <LectureCard
               key={idx}
               {...lecture}
+              onClick={() => goToLecture(lecture)}
               onEdit={() => handleEdit(lecture, idx)}
               onDelete={() => handleDelete(lecture, idx)}
             />

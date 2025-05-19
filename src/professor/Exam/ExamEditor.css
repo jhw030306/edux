@@ -1,0 +1,137 @@
+/* ========================
+   ExamEditor.css - 배포형 정리 버전
+========================= */
+
+.exam-editor {
+  padding: 32px 0;
+  font-family: "Apple SD Gothic Neo", sans-serif;
+  background-color: #f4f6f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* 헤더: 탭 + 저장/제출 버튼 */
+.exam-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 28px;
+  padding: 0 24px;
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+}
+
+.tabs button {
+  min-width: 100px;
+  padding: 10px 18px;
+  background: #ffffff;
+  border: 1px solid #ccd2dc;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #222;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tabs button.active {
+  background: #1a2a3a;
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.actions button {
+  padding: 10px 24px;
+  background: #1a2a3a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.actions button:hover {
+  background: #2c3e50;
+}
+
+/* 본문: 전체 에디터 구조 */
+.exam-editor-body {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* 문제 리스트 + 사이드바 구조 */
+.exam-questions {
+  width: 100%;
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* 문제카드 리스트 */
+.question-list {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  box-sizing: border-box;
+}
+
+/* 문제 추가 버튼 박스 */
+.question-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e0e4e9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.question-sidebar h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.question-sidebar button {
+  padding: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  border: 1px solid #d3d7df;
+  background: #f9fafa;
+  color: #333;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.question-sidebar button:hover {
+  background: #e6eef5;
+}

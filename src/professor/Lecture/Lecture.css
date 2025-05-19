@@ -1,0 +1,124 @@
+/* 전체 페이지 콘텐츠 정렬 */
+.page-content {
+  padding: 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 공통 박스 스타일 (학생, 시험, + 버튼) */
+.section-box,
+.add-section {
+  width: 800px;
+  margin: 0 auto;
+  background-color: white;
+  border: 1px solid #d6dce5;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+/* section-box는 flex 정렬 */
+.section-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* + 버튼은 가운데 정렬 */
+.add-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  color: #1a2a3a;
+  background-color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-section:hover {
+  background-color: #f5f7fa;
+}
+
+/* 제목 (학생, 시험 이름) */
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a2a3a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 버튼 그룹 */
+.section-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* 일반 버튼 */
+.action-button {
+  background-color: #1a2a3a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 수정/삭제 아이콘 */
+.icon-buttons img {
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+
+/* 모달 기본 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: white;
+  padding: 24px 32px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.delete-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.submit-btn {
+  background-color: #1a2a3a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.notice {
+  font-size: 12px;
+  color: gray;
+  margin-top: 8px;
+  display: block;
+}

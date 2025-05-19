@@ -25,9 +25,9 @@ export const Loginpage = () => {
 
   const handleLogin = () => {
     if (userType === "professor") {
-      navigate("/prolecture");
+      navigate("/prolecturelist");
     } else if (userType === "student") {
-      navigate("/stulecture");
+      navigate("/stulecturelist");
     }
   };
 

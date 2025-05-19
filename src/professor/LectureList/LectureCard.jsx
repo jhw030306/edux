@@ -5,9 +5,12 @@ export const LectureCard = ({
   schedule,
   onEdit,
   onDelete,
+  onClick, // ✅ 추가
 }) => {
   return (
-    <div className="card">
+    <div className="card" onClick={onClick}>
+      {" "}
+      {/* ✅ 카드 전체 클릭 가능 */}
       <div className="card-header">
         <span className="card-title">{title}</span>
         <div className="card-icons">
@@ -15,13 +18,19 @@ export const LectureCard = ({
             src="/edit.png"
             alt="edit"
             className="icon-btn"
-            onClick={onEdit}
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ 부모 onClick 방지
+              onEdit();
+            }}
           />
           <img
             src="/delete.png"
             alt="delete"
             className="icon-btn"
-            onClick={onDelete}
+            onClick={(e) => {
+              e.stopPropagation(); // ✅ 부모 onClick 방지
+              onDelete();
+            }}
           />
         </div>
       </div>
