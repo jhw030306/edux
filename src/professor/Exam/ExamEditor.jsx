@@ -7,7 +7,7 @@ import { MainLayout } from "../../layout/MainLayout";
 import "./ExamEditor.css";
 
 const ExamEditor = () => {
-  const [activeTab, setActiveTab] = useState("questions");
+  const [activeTab, setActiveTab] = useState("settings");
 
   const [examData, setExamData] = useState({
     settings: {

@@ -10,7 +10,7 @@ export const Loginpage = () => {
   const [userType, setUserType] = useState("professor");
   const [loginForm, setLoginForm] = useState({
     username: "",
-    password: ""
+    password: "",
   });
 
   // signup → login 이동 시 학생 탭이 선택되도록
@@ -41,8 +41,14 @@ export const Loginpage = () => {
         : "/api/students/login";
     const payload =
       userType === "professor"
-        ? { username: loginForm.username, password: loginForm.password }
-        : { studentId: loginForm.username, password: loginForm.password };
+        ? {
+            username: loginForm.username,
+            password: loginForm.password,
+          }
+        : {
+            studentId: loginForm.username,
+            password: loginForm.password,
+          };
 
     try {
       const response = await axios.post(url, payload, {
@@ -50,16 +56,24 @@ export const Loginpage = () => {
         headers: { "Content-Type": "application/json" },
       });
 
-
       alert("로그인 성공!");
 
       if (userType === "professor") {
-        sessionStorage.setItem("professorId", response.data.id);
-        navigate("/prolecture");
+        sessionStorage.setItem(
+          "professorId",
+          response.data.id
+        );
+        navigate("/prolecturelist");
       } else {
-        sessionStorage.setItem("studentId", response.data.id);
-        sessionStorage.setItem("studentLoginId", response.data.studentId);
-        navigate("/stulecture");
+        sessionStorage.setItem(
+          "studentId",
+          response.data.id
+        );
+        sessionStorage.setItem(
+          "studentLoginId",
+          response.data.studentId
+        );
+        navigate("/stulecturelist");
       }
     } catch (error) {
       console.error("로그인 실패", error);
@@ -72,7 +86,10 @@ export const Loginpage = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-        <div className="login-title" onClick={() => goTo("/main")}>
+        <div
+          className="login-title"
+          onClick={() => goTo("/main")}
+        >
           EduX
         </div>
 
@@ -124,16 +141,27 @@ export const Loginpage = () => {
             />
           </div>
 
-          <button className="login-button" onClick={handleLogin}>
+          <button
+            className="login-button"
+            onClick={handleLogin}
+          >
             로그인
           </button>
 
           <div className="login-actions">
-            <span onClick={() => goTo("/idfind")}>아이디 찾기</span>
+            <span onClick={() => goTo("/idfind")}>
+              아이디 찾기
+            </span>
             <span className="separator">|</span>
-            <span onClick={() => goTo("/pwfind")}>비밀번호 찾기</span>
+            <span onClick={() => goTo("/pwfind")}>
+              비밀번호 찾기
+            </span>
             <span className="separator">|</span>
-            <span onClick={() => goTo("/signup", { state: { userType } })}>
+            <span
+              onClick={() =>
+                goTo("/signup", { state: { userType } })
+              }
+            >
               회원가입
             </span>
           </div>
