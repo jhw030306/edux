@@ -1,4 +1,5 @@
 import React from "react";
+import "./ExamEditor.css";
 
 const ExamSettings = ({ settings, updateSettings }) => {
   const handleChange = (field, value) => {
@@ -6,9 +7,9 @@ const ExamSettings = ({ settings, updateSettings }) => {
   };
 
   return (
-    <div className="exam-settings">
-      <label>
-        시험 일자
+    <div className="settings">
+      <div className="row">
+        <label>시험 날짜</label>
         <input
           type="date"
           value={settings.date}
@@ -16,10 +17,10 @@ const ExamSettings = ({ settings, updateSettings }) => {
             handleChange("date", e.target.value)
           }
         />
-      </label>
+      </div>
 
-      <label>
-        시작 시간
+      <div className="row time">
+        <label>시험 시간</label>
         <input
           type="time"
           value={settings.startTime}
@@ -27,10 +28,7 @@ const ExamSettings = ({ settings, updateSettings }) => {
             handleChange("startTime", e.target.value)
           }
         />
-      </label>
-
-      <label>
-        종료 시간
+        <span className="separator">~</span>
         <input
           type="time"
           value={settings.endTime}
@@ -38,10 +36,10 @@ const ExamSettings = ({ settings, updateSettings }) => {
             handleChange("endTime", e.target.value)
           }
         />
-      </label>
+      </div>
 
-      <label>
-        제한 시간 (분)
+      <div className="row">
+        <label>제한 시간 (분)</label>
         <input
           type="number"
           value={settings.duration}
@@ -49,22 +47,23 @@ const ExamSettings = ({ settings, updateSettings }) => {
             handleChange("duration", Number(e.target.value))
           }
         />
-      </label>
-
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.useSameScore}
-          onChange={(e) =>
-            handleChange("useSameScore", e.target.checked)
-          }
-        />
-        전체 문제 동일 배점 사용
-      </label>
+      </div>
+      <div className="row checkbox">
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={settings.useSameScore}
+            onChange={(e) =>
+              handleChange("useSameScore", e.target.checked)
+            }
+          />
+          <span>전체 문제 동일 배점 사용</span>
+        </label>
+      </div>
 
       {settings.useSameScore && (
-        <label>
-          각 문제 배점
+        <div className="row">
+          <label>각 문제 배점</label>
           <input
             type="number"
             value={settings.scorePerQuestion}
@@ -75,7 +74,7 @@ const ExamSettings = ({ settings, updateSettings }) => {
               )
             }
           />
-        </label>
+        </div>
       )}
     </div>
   );

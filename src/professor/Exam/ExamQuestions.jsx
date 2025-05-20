@@ -8,13 +8,19 @@ const ExamQuestions = ({
   setQuestions,
   settings,
 }) => {
+  // 문제 추가 함수
   const addQuestion = (type) => {
     const newQuestion = {
       id: Date.now(),
       type,
       question: "",
-      options: ["", "", "", ""],
-      answer: type === "multiple" ? [] : "",
+      options: type === "multiple" ? ["", ""] : [],
+      answer:
+        type === "multiple"
+          ? []
+          : type === "ox"
+          ? null
+          : "",
       multipleChoice: false,
       score: settings.useSameScore
         ? settings.scorePerQuestion
@@ -23,24 +29,27 @@ const ExamQuestions = ({
     setQuestions([...questions, newQuestion]);
   };
 
+  // 문제 업데이트
   const updateQuestion = (idx, updated) => {
-    const newList = [...questions];
-    newList[idx] = updated;
-    setQuestions(newList);
+    const updatedQuestions = [...questions];
+    updatedQuestions[idx] = updated;
+    setQuestions(updatedQuestions);
   };
 
+  // 문제 삭제
   const removeQuestion = (idx) => {
-    const newList = [...questions];
-    newList.splice(idx, 1);
-    setQuestions(newList);
+    const filtered = questions.filter((_, i) => i !== idx);
+    setQuestions(filtered);
   };
 
+  // 문제 순서 이동
   const moveQuestion = (idx, dir) => {
-    const target = idx + dir;
-    if (target < 0 || target >= questions.length) return;
+    const targetIdx = idx + dir;
+    if (targetIdx < 0 || targetIdx >= questions.length)
+      return;
     const newList = [...questions];
-    [newList[idx], newList[target]] = [
-      newList[target],
+    [newList[idx], newList[targetIdx]] = [
+      newList[targetIdx],
       newList[idx],
     ];
     setQuestions(newList);
@@ -54,13 +63,16 @@ const ExamQuestions = ({
             key={q.id}
             index={i}
             data={q}
-            onUpdate={(upd) => updateQuestion(i, upd)}
+            onUpdate={(updated) =>
+              updateQuestion(i, updated)
+            }
             onRemove={() => removeQuestion(i)}
             onMove={moveQuestion}
             useSameScore={settings.useSameScore}
           />
         ))}
       </div>
+
       <QuestionSidebar onAdd={addQuestion} />
     </div>
   );

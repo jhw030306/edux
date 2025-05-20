@@ -3,7 +3,7 @@ import React from "react";
 const QuestionSidebar = ({ onAdd }) => {
   return (
     <div className="question-sidebar">
-      <h4>문제 유형 추가</h4>
+      <h3>문제 유형 추가</h3>
       <button onClick={() => onAdd("multiple")}>
         객관식
       </button>
