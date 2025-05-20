@@ -1,11 +1,19 @@
+// MainLayout.jsx
+
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./MainLayout.css";
 
 export const MainLayout = ({ children }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const lecture = location.state?.lecture;
+
+  // 항상 sessionStorage에서 불러오기
+  const savedLecture = sessionStorage.getItem(
+    "selectedLecture"
+  );
+  const lecture = savedLecture
+    ? JSON.parse(savedLecture)
+    : null;
 
   const title = lecture?.title || "강의명 없음";
   const section = lecture?.section || "1분반";
@@ -23,7 +31,10 @@ export const MainLayout = ({ children }) => {
       </div>
       <div
         className="Main-logout"
-        onClick={() => navigate("/login")}
+        onClick={() => {
+          sessionStorage.clear(); // 로그아웃 시 전체 제거
+          navigate("/login");
+        }}
       >
         로그아웃
       </div>

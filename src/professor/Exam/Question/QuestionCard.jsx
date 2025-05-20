@@ -1,5 +1,4 @@
-// QuestionCard.jsx
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./QuestionCard.css";
 
 const QuestionCard = ({
@@ -8,8 +7,11 @@ const QuestionCard = ({
   onUpdate,
   onRemove,
   onMove,
-  useSameScore,
 }) => {
+  const [editingQuestion, setEditingQuestion] =
+    useState(false);
+  const textareaRef = useRef(null);
+
   const handleChange = (field, value) => {
     onUpdate({ ...data, [field]: value });
   };
@@ -26,144 +28,119 @@ const QuestionCard = ({
   };
 
   const handleRemoveOption = (i) => {
-    const newOptions = data.options.filter(
+    const updatedOptions = data.options.filter(
       (_, idx) => idx !== i
     );
-    const newAnswers = Array.isArray(data.answer)
-      ? data.answer.filter((a) => a !== i)
+    const updatedAnswer = Array.isArray(data.answer)
+      ? data.answer
+          .filter((a) => a !== i)
+          .map((a) => (a > i ? a - 1 : a))
       : data.answer === i
       ? null
+      : data.answer > i
+      ? data.answer - 1
       : data.answer;
     onUpdate({
       ...data,
-      options: newOptions,
-      answer: newAnswers,
+      options: updatedOptions,
+      answer: updatedAnswer,
     });
   };
 
   const toggleAnswer = (i) => {
-    if (data.multipleChoice) {
-      const updated = data.answer.includes(i)
-        ? data.answer.filter((a) => a !== i)
-        : [...data.answer, i];
-      onUpdate({ ...data, answer: updated });
-    } else {
-      onUpdate({ ...data, answer: i });
+    onUpdate({ ...data, answer: i });
+  };
+
+  const autoResize = () => {
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
     }
   };
 
+  useEffect(() => {
+    autoResize();
+  }, [data.question]);
+
   return (
     <div className="question-card">
-      <div className="question-header">
+      {/* 문제 입력 줄 */}
+      <div className="question-input-row">
         <div className="question-meta">
           <strong>{index + 1}.</strong>
         </div>
-        <div className="question-controls">
-          {!useSameScore ? (
-            <input
-              type="number"
-              value={data.score}
-              onChange={(e) =>
-                handleChange(
-                  "score",
-                  parseInt(e.target.value)
-                )
-              }
-              className="score-input"
-            />
-          ) : (
-            <span className="score-label">
-              배점: {data.score}점
-            </span>
-          )}
-          <button onClick={() => onMove(index, -1)}>
-            ↑
-          </button>
-          <button onClick={() => onMove(index, 1)}>
-            ↓
-          </button>
-          <button onClick={onRemove}>삭제</button>
-        </div>
+        {editingQuestion ? (
+          <textarea
+            ref={textareaRef}
+            className="question-textarea"
+            value={data.question}
+            onChange={(e) =>
+              handleChange("question", e.target.value)
+            }
+            onBlur={() => setEditingQuestion(false)}
+            rows={1}
+          />
+        ) : (
+          <div
+            className="question-display"
+            onClick={() => setEditingQuestion(true)}
+          >
+            {data.question || "문제를 입력하세요"}
+          </div>
+        )}
       </div>
 
-      <textarea
-        placeholder="문제를 입력하세요"
-        value={data.question}
-        onChange={(e) =>
-          handleChange("question", e.target.value)
-        }
-        className="question-textarea"
-      />
-
+      {/* 객관식 보기 */}
       {data.type === "multiple" && (
-        <>
-          <div className="multiple-type-toggle">
-            <label>
-              <input
-                type="checkbox"
-                checked={data.multipleChoice || false}
-                onChange={(e) => {
-                  const isMulti = e.target.checked;
-                  handleChange("multipleChoice", isMulti);
-                  handleChange(
-                    "answer",
-                    isMulti ? [] : null
-                  );
-                }}
-              />
-              복수 정답 허용
-            </label>
-          </div>
-          <div className="options">
-            {data.options.map((opt, i) => (
-              <div key={i} className="option-item">
-                {data.multipleChoice ? (
-                  <input
-                    type="checkbox"
-                    checked={data.answer.includes(i)}
-                    onChange={() => toggleAnswer(i)}
-                  />
-                ) : (
-                  <input
-                    type="radio"
-                    name={`single-${data.id}`}
-                    checked={data.answer === i}
-                    onChange={() => toggleAnswer(i)}
-                  />
-                )}
-                <span className="option-label">
-                  {i + 1}.
-                </span>
+        <div className="options">
+          {data.options.map((opt, i) => (
+            <div key={i} className="option-item">
+              <label className="option-radio-wrapper">
                 <input
-                  type="text"
-                  value={opt}
-                  onChange={(e) =>
-                    handleOptionChange(i, e.target.value)
-                  }
-                  placeholder={`보기 ${i + 1}`}
+                  type="radio"
+                  name={`single-${data.id}`}
+                  checked={data.answer === i}
+                  onChange={() => toggleAnswer(i)}
                 />
-                {data.options.length > 2 && (
-                  <button
-                    onClick={() => handleRemoveOption(i)}
-                    className="option-remove"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-            {data.options.length < 10 && (
-              <button
-                onClick={handleAddOption}
-                className="option-add"
-              >
-                + 보기 추가
-              </button>
-            )}
-          </div>
-        </>
+              </label>
+
+              <span className="option-label">{i + 1}.</span>
+
+              <input
+                type="text"
+                value={opt}
+                onChange={(e) =>
+                  handleOptionChange(i, e.target.value)
+                }
+                placeholder={`보기 ${i + 1}`}
+                className="option-input"
+              />
+
+              {data.options.length > 2 && (
+                <button
+                  onClick={() => handleRemoveOption(i)}
+                  className="option-remove"
+                  title="삭제"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+
+          {data.options.length < 10 && (
+            <button
+              className="option-add"
+              onClick={handleAddOption}
+            >
+              + 보기 추가
+            </button>
+          )}
+        </div>
       )}
 
+      {/* OX 문제 */}
       {data.type === "ox" && (
         <div className="ox-answer">
           <label>
@@ -173,7 +150,7 @@ const QuestionCard = ({
               checked={data.answer === "O"}
               onChange={() => handleChange("answer", "O")}
             />
-            O (정답)
+            O
           </label>
           <label>
             <input
@@ -182,11 +159,12 @@ const QuestionCard = ({
               checked={data.answer === "X"}
               onChange={() => handleChange("answer", "X")}
             />
-            X (정답)
+            X
           </label>
         </div>
       )}
 
+      {/* 서술형 */}
       {data.type === "subjective" && (
         <input
           type="text"
@@ -198,6 +176,27 @@ const QuestionCard = ({
           className="subjective-input"
         />
       )}
+
+      {/* 하단 컨트롤 버튼 그룹 */}
+      <div className="question-footer-controls">
+        <input
+          type="number"
+          value={data.score}
+          min={0}
+          onChange={(e) =>
+            handleChange("score", parseInt(e.target.value))
+          }
+          className="score-input"
+        />
+        <button onClick={() => onMove(index, -1)}>↑</button>
+        <button onClick={() => onMove(index, 1)}>↓</button>
+        <button
+          onClick={onRemove}
+          className="question-delete-btn"
+        >
+          삭제
+        </button>
+      </div>
     </div>
   );
 };

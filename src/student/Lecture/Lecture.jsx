@@ -11,11 +11,10 @@ import "./LectureList.css";
 export const StuLectureList = () => {
   const navigate = useNavigate();
 
-  const goToMain = () => {
-    navigate("/main");
-  };
-
+  // 학생 수강 강의 리스트 상태
   const [lectures, setLectures] = useState([]);
+
+  // 인증코드 입력 모달 열림 상태
   const [isEnterOpen, setIsEnterOpen] = useState(false);
 
   const studentLoginId = sessionStorage.getItem(
@@ -29,7 +28,16 @@ export const StuLectureList = () => {
     phoneNumber: "",
   });
 
-  // 전체 강의 목록 로드 함수
+  const goToMain = () => {
+    navigate("/main");
+  };
+
+  // 강의 상세 페이지로 이동하는 함수 (클릭한 강의 정보 전달)
+  const goToLecture = (lecture) => {
+    navigate("/prolecture-student", { state: { lecture } });
+  };
+
+  // 학생 강의 목록 불러오기
   const loadLectures = useCallback(() => {
     fetch(`/api/student-classrooms/${studentLoginId}`)
       .then((res) => {
@@ -108,6 +116,7 @@ export const StuLectureList = () => {
               authCode={lec.accessCode}
               section={lec.section}
               schedule={lec.time}
+              onClick={() => goToLecture(lec)}
             />
           ))}
 
@@ -124,7 +133,6 @@ export const StuLectureList = () => {
         <LectureEnter
           onClose={() => setIsEnterOpen(false)}
           onSubmit={async (newLecture) => {
-            // 1) 새로고침 없이 전체 목록 다시 로드
             await loadLectures();
             setIsEnterOpen(false);
           }}

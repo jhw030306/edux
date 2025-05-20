@@ -6,9 +6,10 @@ import { Idfindpage } from "./auth/Idfind/idfindpage";
 import { Pwfindpage } from "./auth/Pwfind/Pwfindpage";
 import { IdfindResultpage } from "./auth/Idfind/IdfindResult";
 import { PwfindResultpage } from "./auth/Pwfind/PwfindResult";
-import { ProLecturepage } from "./professor/LectureList/LectureList";
-import { StuLecturepage } from "./student/LectureList/LectureList";
+import { ProLectureList } from "./professor/LectureList/LectureList";
+import { StuLectureList } from "./student/LectureList/LectureList";
 import { ProLecture } from "./professor/Lecture/Lecture";
+import { StuLecture } from "./student/Lecture/Lecture";
 import ExamEditor from "./professor/Exam/ExamEditor";
 
 function App() {
@@ -30,13 +31,14 @@ function App() {
       />
       <Route
         path="/prolecturelist"
-        element={<ProLecturepage />}
+        element={<ProLectureList />}
       />
       <Route
         path="/stulecturelist"
-        element={<StuLecturepage />}
+        element={<StuLectureList />}
       />
       <Route path="/prolecture" element={<ProLecture />} />
+      <Route path="/stulecture" element={<StuLecture />} />
       <Route path="/exameditor" element={<ExamEditor />} />
     </Routes>
   );
