@@ -54,11 +54,11 @@ export const Loginpage = () => {
 
       if (userType === "professor") {
         sessionStorage.setItem("professorId", response.data.id);
-        navigate("/prolecture");
+        navigate("/prolecturelist");
       } else {
         sessionStorage.setItem("studentId", response.data.id);
         sessionStorage.setItem("studentLoginId", response.data.studentId);
-        navigate("/stulecture");
+        navigate("/stulecturelist");
       }
     } catch (error) {
       console.error("로그인 실패", error);

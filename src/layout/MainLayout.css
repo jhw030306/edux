@@ -1,0 +1,58 @@
+.Main-layout {
+  min-height: 100vh;
+
+  background: linear-gradient(
+    118deg,
+    #6397c7 0%,
+    #0d365c 100%
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 15px;
+  position: relative;
+}
+
+/* 오른쪽 상단 로그아웃 */
+.Main-logout {
+  position: absolute;
+  top: 15px;
+  right: 60px;
+  font-size: 14px;
+  color: white;
+  cursor: pointer;
+}
+
+/* EduX + 과목명 컨테이너 */
+.Main-logo {
+  width: 100%;
+  padding-left: 60px;
+  font-size: 40px;
+  font-family: "ddag", sans-serif;
+  color: black;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* 과목명 가운데 정렬 */
+.lecture-name {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 30px;
+  font-weight: 600;
+  color: white;
+}
+
+/* 콘텐츠 박스 */
+.Main-box {
+  width: 100%;
+  max-width: none;
+  background-color: #eef1f4;
+
+  flex-grow: 1;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
