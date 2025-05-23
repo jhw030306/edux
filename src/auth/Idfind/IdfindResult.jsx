@@ -62,7 +62,7 @@ export const IdfindResultpage = ({ className }) => {
                 <span className="user-id">{item.id}</span>
               </div>
             ))}
-            <div className="action-button-wrapper">
+            <div className="idfind-button-wrapper">
               <Button
                 text="비밀번호 찾기"
                 size="sm"

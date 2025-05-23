@@ -59,11 +59,33 @@
   color: #000000;
 }
 
-.action-button-wrapper {
+/* .action-button-wrapper {
   display: flex;
   justify-content: center;
   width: 100%;
   max-width: 400px;
+} */
+/* 비밀번호 찾기 버튼뒤에뜨는 이상한 회색버튼 지우기용도 */
+
+.idfind-button-wrapper {
+  background: none;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  cursor: default;
+}
+
+.action-button-wrapper > * {
+  z-index: 1;
+  position: relative;
+}
+
+.action-button-wrapper::before {
+  display: none !important; /* 혹시 의심되는 before 요소 */
+}
+
+.action-button-wrapper::after {
+  display: none !important;
 }
 
 .no-result-text {
