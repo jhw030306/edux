@@ -14,7 +14,9 @@ export const LectureEnter = ({ onSubmit, onClose }) => {
     setLoading(true);
     setErrorMsg("");
 
-    const studentLoginId = sessionStorage.getItem("studentLoginId");
+    const studentLoginId = sessionStorage.getItem(
+      "studentLoginId"
+    );
 
     try {
       const { data } = await axios.post(
@@ -34,7 +36,9 @@ export const LectureEnter = ({ onSubmit, onClose }) => {
       onClose();
     } catch (err) {
       console.error("강의 추가 실패:", err);
-      setErrorMsg(err.response?.data || "등록 중 오류가 발생했습니다.");
+      setErrorMsg(
+        err.response?.data || "등록 중 오류가 발생했습니다."
+      );
     } finally {
       setLoading(false);
     }
@@ -49,7 +53,9 @@ export const LectureEnter = ({ onSubmit, onClose }) => {
           onChange={(e) => setCode(e.target.value)}
           placeholder="인증코드"
         />
-        {errorMsg && <div className="error-msg">{errorMsg}</div>}
+        {errorMsg && (
+          <div className="error-msg">{errorMsg}</div>
+        )}
         <div className="delete-buttons">
           <button onClick={handleSubmit} disabled={loading}>
             {loading ? "등록 중..." : "등록"}
