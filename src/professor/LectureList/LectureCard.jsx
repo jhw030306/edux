@@ -5,19 +5,12 @@ export const LectureCard = ({
   schedule,
   onEdit,
   onDelete,
-<<<<<<< HEAD
-  onClick
-=======
   onClick, // ✅ 추가
->>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 }) => {
   return (
     <div className="card" onClick={onClick}>
       {" "}
-<<<<<<< HEAD
-=======
       {/* ✅ 카드 전체 클릭 가능 */}
->>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
       <div className="card-header">
         <span className="card-title">{title}</span>
         <div className="card-icons">
@@ -26,11 +19,7 @@ export const LectureCard = ({
             alt="edit"
             className="icon-btn"
             onClick={(e) => {
-<<<<<<< HEAD
-              e.stopPropagation(); //  부모 onClick 방지
-=======
               e.stopPropagation(); // ✅ 부모 onClick 방지
->>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
               onEdit();
             }}
           />
@@ -39,11 +28,7 @@ export const LectureCard = ({
             alt="delete"
             className="icon-btn"
             onClick={(e) => {
-<<<<<<< HEAD
-              e.stopPropagation(); // 부모 onClick 방지
-=======
               e.stopPropagation(); // ✅ 부모 onClick 방지
->>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
               onDelete();
             }}
           />
