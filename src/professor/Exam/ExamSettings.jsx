@@ -81,3 +81,4 @@ const ExamSettings = ({ settings, updateSettings }) => {
 };
 
 export default ExamSettings;
+

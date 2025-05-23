@@ -1,27 +1,26 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { LectureCard } from "./LectureCard";
 import { LectureEnter } from "./LectureEnter";
 import { useNavigate } from "react-router-dom";
 import "./LectureList.css";
 
-export const StuLectureList = () => {
+export const StuLecturepage = () => {
   const navigate = useNavigate();
 
   const goToMain = () => {
     navigate("/main");
   };
 
+  const goToLecture = (lecture) => {
+  navigate("/stulecture", {
+    state: { lecture },
+  });
+};
   const [lectures, setLectures] = useState([]);
   const [isEnterOpen, setIsEnterOpen] = useState(false);
 
-  const studentLoginId = sessionStorage.getItem(
-    "studentLoginId"
-  );
-  const studentPk = sessionStorage.getItem("studentId");
+  const studentLoginId = sessionStorage.getItem("studentLoginId");
+  const studentPk      = sessionStorage.getItem("studentId");
 
   const [studentInfo, setStudentInfo] = useState({
     studentNumber: "",
@@ -33,14 +32,11 @@ export const StuLectureList = () => {
   const loadLectures = useCallback(() => {
     fetch(`/api/student-classrooms/${studentLoginId}`)
       .then((res) => {
-        if (!res.ok)
-          throw new Error("강의 목록 불러오기 실패");
+        if (!res.ok) throw new Error("강의 목록 불러오기 실패");
         return res.json();
       })
       .then((data) => setLectures(data))
-      .catch((err) =>
-        console.error("강의 목록 에러:", err)
-      );
+      .catch((err) => console.error("강의 목록 에러:", err));
   }, [studentLoginId]);
 
   useEffect(() => {
@@ -53,20 +49,17 @@ export const StuLectureList = () => {
 
     fetch(`/api/students/${studentPk}`)
       .then((res) => {
-        if (!res.ok)
-          throw new Error("학생 정보 불러오기 실패");
+        if (!res.ok) throw new Error("학생 정보 불러오기 실패");
         return res.json();
       })
       .then((data) =>
         setStudentInfo({
           studentNumber: data.studentNumber,
-          name: data.name,
-          phoneNumber: data.phoneNumber,
+          name:          data.name,
+          phoneNumber:   data.phoneNumber,
         })
       )
-      .catch((err) =>
-        console.error("학생 정보 에러:", err)
-      );
+      .catch((err) => console.error("학생 정보 에러:", err));
   }, [studentLoginId, studentPk, navigate, loadLectures]);
 
   const handleLogout = async () => {
@@ -83,20 +76,21 @@ export const StuLectureList = () => {
   return (
     <div className="page-container">
       <aside className="sidebar">
+
         <h1 className="logo" onClick={goToMain}>
           EduX
         </h1>
         <div className="avatar" />
         <p className="logout" onClick={handleLogout}>
+
+
           [ 로그아웃 ]
         </p>
         <div className="name">
           {studentInfo.studentNumber}{" "}
           <span className="thin">{studentInfo.name}</span>
         </div>
-        <div className="email">
-          {studentInfo.phoneNumber}
-        </div>
+        <div className="email">{studentInfo.phoneNumber}</div>
       </aside>
 
       <main className="main">
@@ -105,9 +99,10 @@ export const StuLectureList = () => {
             <LectureCard
               key={lec.id}
               title={lec.className}
-              authCode={lec.accessCode}
+              authCode={lec.accessCode} 
               section={lec.section}
               schedule={lec.time}
+              onClick={() => goToLecture(lec)}
             />
           ))}
 

@@ -1,4 +1,7 @@
+<<<<<<< HEAD
+=======
 // src/components/ExamDelete.jsx
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 import React from "react";
 import "./Lecture.css"; // 필요 시 모달 관련 스타일 포함
 
