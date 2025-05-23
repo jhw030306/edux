@@ -68,8 +68,6 @@ export const ProLecturepage = () => {
   fetchProfessorAndClassrooms();
 }, []);
 
-
-
   const handleAddLecture = (newLecture) => {
   const lectureWithMappedFields = {
     ...newLecture,
@@ -130,9 +128,15 @@ export const ProLecturepage = () => {
             <LectureCard
               key={idx}
               {...lecture}
+<<<<<<< HEAD
               onClick={() => goToLecture(lecture)} // 강의 카드 클릭하면 상세 페이지로 이동
               onEdit={() => handleEdit(lecture, idx)} // 수정 버튼 클릭 시
               onDelete={() => handleDelete(lecture, idx)} // 삭제 버튼 클릭 시
+=======
+              onClick={() => goToLecture(lecture)}
+              onEdit={() => handleEdit(lecture, idx)}
+              onDelete={() => handleDelete(lecture, idx)}
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
             />
           ))}
           <div

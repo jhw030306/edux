@@ -1,15 +1,25 @@
+<<<<<<< HEAD
 import React, { useState } from "react";
 import "./ExamEditor.css";
 
 const ExamAccess = ({ access, updateAccess }) => {
   const [customUrl, setCustomUrl] = useState("");
 
+=======
+import React from "react";
+
+const ExamAccess = ({ access, updateAccess }) => {
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
   const handleMode = (mode) => {
     updateAccess({ ...access, mode });
   };
 
   const addSite = (site) => {
+<<<<<<< HEAD
     if (site && !access.allowedSites.includes(site)) {
+=======
+    if (!access.allowedSites.includes(site)) {
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
       updateAccess({
         ...access,
         allowedSites: [...access.allowedSites, site],
@@ -27,6 +37,7 @@ const ExamAccess = ({ access, updateAccess }) => {
   };
 
   return (
+<<<<<<< HEAD
     <div className="exam-access settings">
       {/* 접속 제한 */}
       <div className="row">
@@ -139,6 +150,65 @@ const ExamAccess = ({ access, updateAccess }) => {
               </div>
             </div>
           ))}
+=======
+    <div className="exam-access">
+      <div>
+        <label>
+          <input
+            type="radio"
+            checked={access.mode === "deny"}
+            onChange={() => handleMode("deny")}
+          />
+          인터넷 차단
+        </label>
+        <label>
+          <input
+            type="radio"
+            checked={access.mode === "allow"}
+            onChange={() => handleMode("allow")}
+          />
+          전체 허용
+        </label>
+        <label>
+          <input
+            type="radio"
+            checked={access.mode === "custom"}
+            onChange={() => handleMode("custom")}
+          />
+          일부 허용
+        </label>
+      </div>
+
+      {access.mode === "custom" && (
+        <>
+          <div>
+            <button
+              onClick={() =>
+                addSite("https://www.youtube.com")
+              }
+            >
+              유튜브
+            </button>
+            <button
+              onClick={() =>
+                addSite("https://www.tistory.com")
+              }
+            >
+              티스토리
+            </button>
+          </div>
+
+          <ul>
+            {access.allowedSites.map((site) => (
+              <li key={site}>
+                {site}
+                <button onClick={() => removeSite(site)}>
+                  X
+                </button>
+              </li>
+            ))}
+          </ul>
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
         </>
       )}
     </div>

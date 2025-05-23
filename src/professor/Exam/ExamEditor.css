@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 /* 전체 에디터 레이아웃 */
+=======
+/* ========================
+   ExamEditor.css - 배포형 정리 버전
+========================= */
+
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 .exam-editor {
   padding: 32px 0;
   font-family: "Apple SD Gothic Neo", sans-serif;
@@ -9,7 +16,11 @@
   min-height: 100vh;
 }
 
+<<<<<<< HEAD
 /* 헤더 */
+=======
+/* 헤더: 탭 + 저장/제출 버튼 */
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 .exam-editor-header {
   display: flex;
   justify-content: space-between;
@@ -19,6 +30,7 @@
   margin-bottom: 28px;
   padding: 0 24px;
 }
+<<<<<<< HEAD
 .exam-questions {
   width: 100%;
   display: flex;
@@ -36,6 +48,8 @@
   flex-direction: column;
   gap: 32px;
 }
+=======
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 
 .tabs {
   display: flex;
@@ -82,7 +96,11 @@
   background: #2c3e50;
 }
 
+<<<<<<< HEAD
 /* 본문 구조 */
+=======
+/* 본문: 전체 에디터 구조 */
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 .exam-editor-body {
   width: 100%;
   max-width: 1200px;
@@ -93,6 +111,10 @@
   box-sizing: border-box;
 }
 
+<<<<<<< HEAD
+=======
+/* 문제 리스트 + 사이드바 구조 */
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 .exam-questions {
   width: 100%;
   display: flex;
@@ -101,6 +123,10 @@
   align-items: flex-start;
 }
 
+<<<<<<< HEAD
+=======
+/* 문제카드 리스트 */
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 .question-list {
   width: 100%;
   max-width: 880px;
@@ -111,6 +137,10 @@
   box-sizing: border-box;
 }
 
+<<<<<<< HEAD
+=======
+/* 문제 추가 버튼 박스 */
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 .question-sidebar {
   width: 240px;
   flex-shrink: 0;
@@ -146,6 +176,7 @@
 .question-sidebar button:hover {
   background: #e6eef5;
 }
+<<<<<<< HEAD
 
 /* 공통 설정 카드 스타일 */
 .settings {
@@ -376,3 +407,5 @@
   gap: 32px;
   box-sizing: border-box;
 }
+=======
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210

@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 import React, { useState, useRef, useEffect } from "react";
+=======
+// QuestionCard.jsx
+import React from "react";
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 import "./QuestionCard.css";
 
 const QuestionCard = ({
@@ -7,11 +12,16 @@ const QuestionCard = ({
   onUpdate,
   onRemove,
   onMove,
+<<<<<<< HEAD
 }) => {
   const [editingQuestion, setEditingQuestion] =
     useState(false);
   const textareaRef = useRef(null);
 
+=======
+  useSameScore,
+}) => {
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
   const handleChange = (field, value) => {
     onUpdate({ ...data, [field]: value });
   };
@@ -28,6 +38,7 @@ const QuestionCard = ({
   };
 
   const handleRemoveOption = (i) => {
+<<<<<<< HEAD
     const updatedOptions = data.options.filter(
       (_, idx) => idx !== i
     );
@@ -44,10 +55,25 @@ const QuestionCard = ({
       ...data,
       options: updatedOptions,
       answer: updatedAnswer,
+=======
+    const newOptions = data.options.filter(
+      (_, idx) => idx !== i
+    );
+    const newAnswers = Array.isArray(data.answer)
+      ? data.answer.filter((a) => a !== i)
+      : data.answer === i
+      ? null
+      : data.answer;
+    onUpdate({
+      ...data,
+      options: newOptions,
+      answer: newAnswers,
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
     });
   };
 
   const toggleAnswer = (i) => {
+<<<<<<< HEAD
     onUpdate({ ...data, answer: i });
   };
 
@@ -141,6 +167,130 @@ const QuestionCard = ({
       )}
 
       {/* OX 문제 */}
+=======
+    if (data.multipleChoice) {
+      const updated = data.answer.includes(i)
+        ? data.answer.filter((a) => a !== i)
+        : [...data.answer, i];
+      onUpdate({ ...data, answer: updated });
+    } else {
+      onUpdate({ ...data, answer: i });
+    }
+  };
+
+  return (
+    <div className="question-card">
+      <div className="question-header">
+        <div className="question-meta">
+          <strong>{index + 1}.</strong>
+        </div>
+        <div className="question-controls">
+          {!useSameScore ? (
+            <input
+              type="number"
+              value={data.score}
+              onChange={(e) =>
+                handleChange(
+                  "score",
+                  parseInt(e.target.value)
+                )
+              }
+              className="score-input"
+            />
+          ) : (
+            <span className="score-label">
+              배점: {data.score}점
+            </span>
+          )}
+          <button onClick={() => onMove(index, -1)}>
+            ↑
+          </button>
+          <button onClick={() => onMove(index, 1)}>
+            ↓
+          </button>
+          <button onClick={onRemove}>삭제</button>
+        </div>
+      </div>
+
+      <textarea
+        placeholder="문제를 입력하세요"
+        value={data.question}
+        onChange={(e) =>
+          handleChange("question", e.target.value)
+        }
+        className="question-textarea"
+      />
+
+      {data.type === "multiple" && (
+        <>
+          <div className="multiple-type-toggle">
+            <label>
+              <input
+                type="checkbox"
+                checked={data.multipleChoice || false}
+                onChange={(e) => {
+                  const isMulti = e.target.checked;
+                  handleChange("multipleChoice", isMulti);
+                  handleChange(
+                    "answer",
+                    isMulti ? [] : null
+                  );
+                }}
+              />
+              복수 정답 허용
+            </label>
+          </div>
+          <div className="options">
+            {data.options.map((opt, i) => (
+              <div key={i} className="option-item">
+                {data.multipleChoice ? (
+                  <input
+                    type="checkbox"
+                    checked={data.answer.includes(i)}
+                    onChange={() => toggleAnswer(i)}
+                  />
+                ) : (
+                  <input
+                    type="radio"
+                    name={`single-${data.id}`}
+                    checked={data.answer === i}
+                    onChange={() => toggleAnswer(i)}
+                  />
+                )}
+                <span className="option-label">
+                  {i + 1}.
+                </span>
+                <input
+                  type="text"
+                  value={opt}
+                  onChange={(e) =>
+                    handleOptionChange(i, e.target.value)
+                  }
+                  placeholder={`보기 ${i + 1}`}
+                />
+                {data.options.length > 2 && (
+                  <button
+                    onClick={() => handleRemoveOption(i)}
+                    className="option-remove"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+            {data.options.length < 10 && (
+              <button
+                onClick={handleAddOption}
+                className="option-add"
+              >
+                + 보기 추가
+              </button>
+            )}
+          </div>
+        </>
+      )}
+
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
       {data.type === "ox" && (
         <div className="ox-answer">
           <label>
@@ -150,7 +300,11 @@ const QuestionCard = ({
               checked={data.answer === "O"}
               onChange={() => handleChange("answer", "O")}
             />
+<<<<<<< HEAD
             O
+=======
+            O (정답)
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
           </label>
           <label>
             <input
@@ -159,12 +313,19 @@ const QuestionCard = ({
               checked={data.answer === "X"}
               onChange={() => handleChange("answer", "X")}
             />
+<<<<<<< HEAD
             X
+=======
+            X (정답)
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
           </label>
         </div>
       )}
 
+<<<<<<< HEAD
       {/* 서술형 */}
+=======
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
       {data.type === "subjective" && (
         <input
           type="text"
@@ -176,6 +337,7 @@ const QuestionCard = ({
           className="subjective-input"
         />
       )}
+<<<<<<< HEAD
 
       {/* 하단 컨트롤 버튼 그룹 */}
       <div className="question-footer-controls">
@@ -197,6 +359,8 @@ const QuestionCard = ({
           삭제
         </button>
       </div>
+=======
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
     </div>
   );
 };

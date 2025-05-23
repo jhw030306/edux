@@ -16,7 +16,6 @@ export const StuLecturepage = () => {
     state: { lecture },
   });
 };
-
   const [lectures, setLectures] = useState([]);
   const [isEnterOpen, setIsEnterOpen] = useState(false);
 
@@ -77,9 +76,14 @@ export const StuLecturepage = () => {
   return (
     <div className="page-container">
       <aside className="sidebar">
-        <h1 className="logo" onClick={goToMain}>EduX</h1>
+
+        <h1 className="logo" onClick={goToMain}>
+          EduX
+        </h1>
         <div className="avatar" />
         <p className="logout" onClick={handleLogout}>
+
+
           [ 로그아웃 ]
         </p>
         <div className="name">

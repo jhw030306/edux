@@ -9,7 +9,10 @@ import { PwfindResultpage } from "./auth/Pwfind/PwfindResult";
 import { ProLecturepage } from "./professor/LectureList/LectureList";
 import { StuLecturepage } from "./student/LectureList/LectureList";
 import { ProLecture } from "./professor/Lecture/Lecture";
+<<<<<<< HEAD
 import { StuLecture } from "./student/Lecture/Lecture";
+=======
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 import ExamEditor from "./professor/Exam/ExamEditor";
 
 function App() {
@@ -37,8 +40,12 @@ function App() {
         path="/stulecturelist"
         element={<StuLecturepage />}
       />
+<<<<<<< HEAD
       <Route path="/prolecture" element={<ProLecture />} /> 
       <Route path="/stulecture" element={<StuLecture />} />
+=======
+      <Route path="/prolecture" element={<ProLecture />} />
+>>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
       <Route path="/exameditor" element={<ExamEditor />} />
     </Routes>
   );
