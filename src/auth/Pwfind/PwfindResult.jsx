@@ -8,8 +8,7 @@ export const PwfindResultpage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // const { id = "", email = "" } = location.state || {};
-  const { username: id = "", email = "" } = location.state || {};
+  const { id = "", email = "", role = "" } = location.state || {};
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
@@ -56,12 +55,26 @@ export const PwfindResultpage = () => {
     }
 
     try {
-    await axios.post("/api/professors/reset-password", {
-      username: id,
-      newPassword: newPassword
-    }, {
-      withCredentials: true
-    });
+    let url = "";
+    let payload = {};
+
+    if (role === "학생") {
+      url = "/api/students/reset-password";
+      payload = {
+        studentId: id,
+        newPassword,
+      };
+    } else if (role === "교수") {
+      url = "/api/professors/reset-password";
+      payload = {
+        username: id,
+        newPassword,
+      };
+    } else {
+      throw new Error("역할 정보가 유효하지 않습니다.");
+    }
+
+    await axios.post(url, payload, { withCredentials: true });
 
     alert("비밀번호가 성공적으로 변경되었습니다!");
     navigate("/login");
@@ -142,7 +155,7 @@ export const PwfindResultpage = () => {
               </div>
 
               <button
-                className="action-button-wrapper"
+                className="pwfind-button-wrapper"
                 onClick={handleResetPassword}
               >
                 로그인 하기
