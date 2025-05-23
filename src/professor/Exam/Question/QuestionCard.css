@@ -1,0 +1,184 @@
+.question-card {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 16px;
+  border: 1px solid #e2e5e9;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 880px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+}
+
+.question-footer-controls {
+  display: flex;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  gap: 4px; /* 버튼과 인풋 사이 간격 */
+  align-items: center;
+}
+
+.score-input {
+  width: 27px;
+  flex-grow: 0;
+  height: 22px;
+  padding: 4px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+}
+
+.question-footer-controls button {
+  padding: 8px 14px;
+  background: #0d365c;
+  color: white;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.question-footer-controls button:hover {
+  background: #16497a;
+}
+
+/* 문제 제목 줄 */
+.question-input-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.question-meta {
+  font-weight: 600;
+  font-size: 16px;
+  color: #222;
+  padding-top: 8px;
+}
+
+.question-display {
+  flex: 1;
+  font-size: 16px;
+  padding: 10px 14px;
+  background: #f9fafa;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: text;
+}
+
+.question-display:hover {
+  border: 1px solid #ccc;
+}
+
+.question-textarea {
+  flex: 1;
+  font-size: 16px;
+  padding: 10px 14px;
+  border: 1px solid #ccd2dc;
+  border-radius: 8px;
+  background: #fff;
+  resize: none;
+  min-height: 42px;
+  overflow: hidden;
+}
+.question-display,
+.question-textarea {
+  text-align: left;
+}
+
+.multiple-type-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #444;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f9fafb;
+  border: 1px solid #e0e4e9;
+  border-radius: 8px;
+}
+
+.option-label {
+  font-weight: bold;
+  font-size: 14px;
+  width: 26px;
+  text-align: right;
+}
+
+.option-input {
+  flex: 1;
+  font-size: 15px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.option-remove {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #999;
+  cursor: pointer;
+}
+
+.option-add {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  color: #333;
+}
+
+.option-add:hover {
+  background: #e0e7ef;
+}
+.ox-answer {
+  display: flex;
+  flex-direction: column; /* 세로로 쌓이도록 변경 */
+  gap: 11px; /* 항목 사이 간격 */
+  font-size: 15px;
+  padding-left: 0;
+  align-items: flex-start;
+}
+.ox-answer label {
+  display: flex;
+  align-items: center; /* 라디오와 텍스트 수직 가운데 정렬 */
+  gap: 6px;
+  cursor: pointer;
+  min-width: 80px; /* 필요하면 조절 */
+}
+
+/* 라디오버튼 왼쪽 정렬 (객관식 라디오버튼과 동일 라인) */
+.ox-answer label input[type="radio"] {
+  margin-right: 6px;
+}
+
+/* O, X 텍스트를 번호 영역과 비슷한 위치에 고정 */
+.ox-answer label span {
+  position: absolute;
+  left: 28px; /* 번호 영역 너비에 맞춰 조절 */
+  font-weight: bold;
+  pointer-events: none; /* 텍스트 클릭시 라디오 버튼 클릭에 영향 없음 */
+}
+
+/* 라디오 버튼과 텍스트의 왼쪽 정렬 간격 유지 */
+.ox-answer label input[type="radio"] {
+  position: relative;
+  z-index: 1;
+}
