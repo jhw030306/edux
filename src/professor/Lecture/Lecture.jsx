@@ -49,12 +49,6 @@ export const ProLecture = () => {
     }
   }, [_lecture]);
 
-  // const handleAddExam = () => {
-  //   setExams([...exams, { name: "" }]);
-  //   setEditingIndex(exams.length);
-  //   setTempName("");
-  // };
-
   // ✅ 시험 추가 (API 연동)
   const handleAddExam = async () => {
     const professorId = sessionStorage.getItem("professorId");
@@ -87,16 +81,7 @@ export const ProLecture = () => {
     setTempName(e.target.value);
   };
 
-  // const handleNameConfirm = () => {
-  //   if (tempName.trim() === "") return;
-  //   const updated = [...exams];
-  //   updated[editingIndex].name = tempName;
-  //   setExams(updated);
-  //   setEditingIndex(null);
-  //   setTempName("");
-  // };
-
-    // ✅ 이름 확정 시 API로 업데이트
+  // ✅ 이름 확정 시 API로 업데이트
   const handleNameConfirm = async () => {
   const newName = tempName.trim();
   if (newName === "") return;
@@ -138,13 +123,41 @@ export const ProLecture = () => {
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = () => {
-    const updated = exams.filter(
-      (_, i) => i !== examToDelete.idx
-    );
+  // const handleConfirmDelete = () => {
+  //   const updated = exams.filter(
+  //     (_, i) => i !== examToDelete.idx
+  //   );
+  //   setExams(updated);
+  //   setShowDeleteModal(false);
+  // };
+
+  //시험 삭제제
+  const handleConfirmDelete = async () => {
+  const deletedExam = exams[examToDelete.idx];
+
+  try {
+    // 1) 서버에 삭제 요청
+    const response = await fetch(`/api/exams/delete/all/${deletedExam.id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`삭제 실패: ${errorText}`);
+    }
+
+    // 2) 프론트에서 상태 제거
+    const updated = exams.filter((_, i) => i !== examToDelete.idx);
     setExams(updated);
+
+    // 3) 모달 닫기
     setShowDeleteModal(false);
-  };
+    alert("시험 삭제 완료");
+  } catch (error) {
+    console.error("시험 삭제 오류:", error);
+    alert("시험 삭제 중 오류 발생: " + error.message);
+  }
+};
 
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
