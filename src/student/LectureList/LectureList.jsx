@@ -12,6 +12,8 @@ export const StuLecturepage = () => {
   };
 
   const goToLecture = (lecture) => {
+  //console.log("넘기는 lecture 객체:", lecture); // 🔍 로그 찍어보기
+  sessionStorage.setItem("selectedLecture", JSON.stringify(lecture)); //강의실 정보 세션 저장
   navigate("/stulecture", {
     state: { lecture },
   });

@@ -34,7 +34,10 @@ export const ProLecturepage = () => {
       "selectedLecture",
       JSON.stringify(lecture)
     );
-    navigate("/prolecture"); // 상세 강의 페이지 경로로 이동
+    navigate("/prolecture", { // 상세 강의 페이지 경로로 이동
+    state: { lecture },
+  });
+       
   };
 
   const handleLogout = async () => {
