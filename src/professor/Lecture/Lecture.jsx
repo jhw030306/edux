@@ -3,7 +3,10 @@ import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import { ExamDelete } from "./ExamDelete";
+import { useEffect } from "react"; 
 import "./Lecture.css";
+
+
 
 export const ProLecture = () => {
   const location = useLocation();
@@ -21,24 +24,114 @@ export const ProLecture = () => {
     useState(false);
   const [examToDelete, setExamToDelete] = useState(null);
 
-  const handleAddExam = () => {
-    setExams([...exams, { name: "" }]);
-    setEditingIndex(exams.length);
-    setTempName("");
+  // ✅ 강의 정보 저장 + 시험 목록 로드
+  useEffect(() => {
+     console.log("📌 useEffect 실행됨", _lecture);
+    const fetchExams = async () => {
+      const professorId = sessionStorage.getItem("professorId");
+      const classroomId = _lecture?.id;
+      console.log("교수ID:", professorId, "강의실ID:", classroomId);
+      console.log("불러오기 URL:", `/api/exams/${professorId}/${classroomId}/list`);
+
+      try {
+        const res = await fetch(`/api/exams/${professorId}/${classroomId}/list`);
+        if (!res.ok) throw new Error("시험 목록 불러오기 실패");
+        const data = await res.json();
+        setExams(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (_lecture) {
+      sessionStorage.setItem("selectedLecture", JSON.stringify(_lecture));
+      fetchExams();
+    }
+  }, [_lecture]);
+
+  // const handleAddExam = () => {
+  //   setExams([...exams, { name: "" }]);
+  //   setEditingIndex(exams.length);
+  //   setTempName("");
+  // };
+
+  // ✅ 시험 추가 (API 연동)
+  const handleAddExam = async () => {
+    const professorId = sessionStorage.getItem("professorId");
+    const classroomId = _lecture?.id;
+
+    try {
+      const res = await fetch(`/api/exams/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          professorId,
+          classroomId,
+          title: "", // 처음엔 빈 제목
+        }),
+      });
+
+      if (!res.ok) throw new Error("시험 생성 실패");
+
+      const newExam = await res.json();
+      setExams([...exams, newExam]);
+      setEditingIndex(exams.length);
+      setTempName("");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
+  //시험 이름 편집
   const handleNameChange = (e) => {
     setTempName(e.target.value);
   };
 
-  const handleNameConfirm = () => {
-    if (tempName.trim() === "") return;
+  // const handleNameConfirm = () => {
+  //   if (tempName.trim() === "") return;
+  //   const updated = [...exams];
+  //   updated[editingIndex].name = tempName;
+  //   setExams(updated);
+  //   setEditingIndex(null);
+  //   setTempName("");
+  // };
+
+    // ✅ 이름 확정 시 API로 업데이트
+  const handleNameConfirm = async () => {
+  const newName = tempName.trim();
+  if (newName === "") return;
+
+  const exam = exams[editingIndex];
+  console.log("수정 요청 데이터:", { id: exam.id, title: newName });
+
+  try {
+    const res = await fetch("/api/exams/update", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: exam.id,
+        title: newName,
+      }),
+    });
+
+    console.log("응답 상태:", res.status);
+    const result = await res.text();
+    console.log("응답 결과:", result);
+
+    if (!res.ok) throw new Error("시험 수정 실패");
+
     const updated = [...exams];
-    updated[editingIndex].name = tempName;
+    updated[editingIndex].title = newName;
     setExams(updated);
     setEditingIndex(null);
     setTempName("");
-  };
+  } catch (err) {
+    console.error("시험 수정 실패:", err);
+  }
+};
+
 
   const handleDeleteClick = (idx) => {
     setExamToDelete({ idx, name: exams[idx].name });
@@ -56,6 +149,8 @@ export const ProLecture = () => {
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
   };
+
+
 
   return (
     <MainLayout>
@@ -90,14 +185,14 @@ export const ProLecture = () => {
                 />
               ) : (
                 <>
-                  {exam.name}
+                  {exam.title}
                   <span className="icon-buttons">
                     <img
                       src="/edit2.png"
                       alt="edit"
                       onClick={() => {
                         setEditingIndex(idx);
-                        setTempName(exam.name);
+                        setTempName(exam.title);
                       }}
                     />
                     <img
