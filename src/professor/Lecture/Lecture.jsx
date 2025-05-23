@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
@@ -21,12 +21,47 @@ export const ProLecture = () => {
     useState(false);
   const [examToDelete, setExamToDelete] = useState(null);
 
-  const handleAddExam = () => {
-    setExams([...exams, { name: "" }]);
-    setEditingIndex(exams.length);
-    setTempName("");
+  // 시험 목록 불러오기 (API 호출)
+  useEffect(() => {
+    const fetchExams = async () => {
+      try {
+        const response = await fetch("/api/exams"); // 실제 API 경로 사용
+        if (!response.ok)
+          throw new Error(
+            "시험 목록을 불러오는 데 실패했습니다."
+          );
+        const data = await response.json();
+        setExams(data); // 시험 목록 설정
+      } catch (err) {
+        console.error("시험 목록 불러오기 실패:", err);
+      }
+    };
+
+    fetchExams();
+  }, []); // 컴포넌트가 처음 렌더링될 때 한 번만 호출
+
+  // 시험 추가 (API 호출)
+  const handleAddExam = async () => {
+    const newExam = { name: tempName }; // 새로 추가할 시험 객체
+    try {
+      const response = await fetch("/api/exams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newExam),
+      });
+
+      if (!response.ok)
+        throw new Error("시험 추가에 실패했습니다.");
+
+      const addedExam = await response.json();
+      setExams((prevExams) => [...prevExams, addedExam]); // 새 시험 항목 추가
+      setTempName(""); // 입력 필드 초기화
+    } catch (err) {
+      console.error("시험 추가 실패:", err);
+    }
   };
 
+  // 시험 이름 수정
   const handleNameChange = (e) => {
     setTempName(e.target.value);
   };
@@ -40,17 +75,32 @@ export const ProLecture = () => {
     setTempName("");
   };
 
+  // 시험 삭제
   const handleDeleteClick = (idx) => {
     setExamToDelete({ idx, name: exams[idx].name });
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = () => {
-    const updated = exams.filter(
-      (_, i) => i !== examToDelete.idx
-    );
-    setExams(updated);
-    setShowDeleteModal(false);
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await fetch(
+        `/api/exams/${examToDelete.idx}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok)
+        throw new Error("시험 삭제에 실패했습니다.");
+
+      const updatedExams = exams.filter(
+        (_, i) => i !== examToDelete.idx
+      );
+      setExams(updatedExams); // 시험 목록에서 삭제된 시험 항목 제거
+      setShowDeleteModal(false); // 삭제 모달 닫기
+    } catch (err) {
+      console.error("시험 삭제 실패:", err);
+    }
   };
 
   const handleCancelDelete = () => {

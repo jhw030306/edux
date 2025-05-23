@@ -1,5 +1,3 @@
-// MainLayout.jsx
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./MainLayout.css";
@@ -7,7 +5,7 @@ import "./MainLayout.css";
 export const MainLayout = ({ children }) => {
   const navigate = useNavigate();
 
-  // 항상 sessionStorage에서 불러오기
+  // sessionStorage에서 강의 정보 불러오기
   const savedLecture = sessionStorage.getItem(
     "selectedLecture"
   );
@@ -15,7 +13,7 @@ export const MainLayout = ({ children }) => {
     ? JSON.parse(savedLecture)
     : null;
 
-  const title = lecture?.title || "강의명 없음";
+  const title = lecture?.className || "강의명 없음";
   const section = lecture?.section || "1분반";
 
   return (
