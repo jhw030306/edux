@@ -7,11 +7,7 @@ import { MainLayout } from "../../layout/MainLayout";
 import "./ExamEditor.css";
 
 const ExamEditor = () => {
-<<<<<<< HEAD
   const [activeTab, setActiveTab] = useState("settings");
-=======
-  const [activeTab, setActiveTab] = useState("questions");
->>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
 
   const [examData, setExamData] = useState({
     settings: {
@@ -51,7 +47,6 @@ const ExamEditor = () => {
           <div className="tabs">
             <button
               className={
-<<<<<<< HEAD
                 activeTab === "settings" ? "active" : ""
               }
               onClick={() => setActiveTab("settings")}
@@ -60,26 +55,13 @@ const ExamEditor = () => {
             </button>
             <button
               className={
-=======
->>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
                 activeTab === "questions" ? "active" : ""
               }
               onClick={() => setActiveTab("questions")}
             >
               시험 작성
             </button>
-<<<<<<< HEAD
 
-=======
-            <button
-              className={
-                activeTab === "settings" ? "active" : ""
-              }
-              onClick={() => setActiveTab("settings")}
-            >
-              시험 설정
-            </button>
->>>>>>> 756db6263aef1e908a5ad1f6beca8248d4448210
             <button
               className={
                 activeTab === "access" ? "active" : ""
