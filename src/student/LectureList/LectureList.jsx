@@ -1,4 +1,3 @@
-// StuLecturepage.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { LectureCard } from "./LectureCard";
 import { LectureEnter } from "./LectureEnter";
@@ -7,6 +6,17 @@ import "./LectureList.css";
 
 export const StuLecturepage = () => {
   const navigate = useNavigate();
+
+  const goToMain = () => {
+    navigate("/main");
+  };
+
+  const goToLecture = (lecture) => {
+  navigate("/stulecture", {
+    state: { lecture },
+  });
+};
+
   const [lectures, setLectures] = useState([]);
   const [isEnterOpen, setIsEnterOpen] = useState(false);
 
@@ -67,7 +77,7 @@ export const StuLecturepage = () => {
   return (
     <div className="page-container">
       <aside className="sidebar">
-        <h1 className="logo">EduX</h1>
+        <h1 className="logo" onClick={goToMain}>EduX</h1>
         <div className="avatar" />
         <p className="logout" onClick={handleLogout}>
           [ 로그아웃 ]
@@ -85,9 +95,10 @@ export const StuLecturepage = () => {
             <LectureCard
               key={lec.id}
               title={lec.className}
-              authCode={lec.accessCode}
+              authCode={lec.accessCode} 
               section={lec.section}
               schedule={lec.time}
+              onClick={() => goToLecture(lec)}
             />
           ))}
 
