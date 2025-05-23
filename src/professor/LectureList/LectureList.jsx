@@ -1,4 +1,4 @@
-import React, { useState, useEffect  } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { LectureCard } from "./LectureCard";
 import { LectureAdd } from "./LectureAdd";
@@ -28,6 +28,16 @@ export const ProLecturepage = () => {
     navigate("/main")
   };
 
+  // 강의 상세 페이지로 이동하는 함수
+  // 클릭한 강의 정보를 세션 스토리지에 저장 후 이동
+  const goToLecture = (lecture) => {
+    sessionStorage.setItem(
+      "selectedLecture",
+      JSON.stringify(lecture)
+    );
+    navigate("/prolecture"); // 상세 강의 페이지 경로로 이동
+  };
+
   useEffect(() => {
   const fetchProfessorAndClassrooms = async () => {
     const professorId = localStorage.getItem("professorId");
@@ -42,7 +52,7 @@ export const ProLecturepage = () => {
       // 강의실 목록 조회
       const lectureRes = await axios.get(`/api/classrooms/professor/${professorId}/classrooms`);
 
-      // ✅ 필드명 매핑: className → title, time → schedule
+      //  필드명 매핑: className → title, time → schedule
       const mappedLectures = lectureRes.data.map((lecture) => ({
         ...lecture,
         title: lecture.className,
@@ -120,8 +130,9 @@ export const ProLecturepage = () => {
             <LectureCard
               key={idx}
               {...lecture}
-              onEdit={() => handleEdit(lecture, idx)}
-              onDelete={() => handleDelete(lecture, idx)}
+              onClick={() => goToLecture(lecture)} // 강의 카드 클릭하면 상세 페이지로 이동
+              onEdit={() => handleEdit(lecture, idx)} // 수정 버튼 클릭 시
+              onDelete={() => handleDelete(lecture, idx)} // 삭제 버튼 클릭 시
             />
           ))}
           <div
