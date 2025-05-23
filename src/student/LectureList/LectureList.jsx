@@ -1,135 +1,72 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
-import { LectureCard } from "./LectureCard";
-import { LectureEnter } from "./LectureEnter";
-import { useNavigate } from "react-router-dom";
-import "./LectureList.css";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { MainLayout } from "../../layout/MainLayout";
+import "./Lecture.css";
 
-export const StuLectureList = () => {
-  const navigate = useNavigate();
+export const StuLecture = () => {
+  const location = useLocation();
+  const _lecture = location.state?.lecture;
 
-  const goToMain = () => {
-    navigate("/main");
-  };
+  // 시험 목록을 저장할 상태
+  const [exams, setExams] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [lectures, setLectures] = useState([]);
-  const [isEnterOpen, setIsEnterOpen] = useState(false);
-
-  const studentLoginId = sessionStorage.getItem(
-    "studentLoginId"
-  );
-  const studentPk = sessionStorage.getItem("studentId");
-
-  const [studentInfo, setStudentInfo] = useState({
-    studentNumber: "",
-    name: "",
-    phoneNumber: "",
-  });
-
-  // 전체 강의 목록 로드 함수
-  const loadLectures = useCallback(() => {
-    fetch(`/api/student-classrooms/${studentLoginId}`)
-      .then((res) => {
-        if (!res.ok)
-          throw new Error("강의 목록 불러오기 실패");
-        return res.json();
-      })
-      .then((data) => setLectures(data))
-      .catch((err) =>
-        console.error("강의 목록 에러:", err)
-      );
-  }, [studentLoginId]);
-
+  // 출제자 API에서 시험 목록을 받아오는 useEffect
   useEffect(() => {
-    if (!studentLoginId || !studentPk) {
-      alert("로그인이 필요합니다.");
-      navigate("/login");
-      return;
-    }
-    loadLectures();
+    const fetchExams = async () => {
+      setLoading(true);
+      setError(null);
 
-    fetch(`/api/students/${studentPk}`)
-      .then((res) => {
-        if (!res.ok)
-          throw new Error("학생 정보 불러오기 실패");
-        return res.json();
-      })
-      .then((data) =>
-        setStudentInfo({
-          studentNumber: data.studentNumber,
-          name: data.name,
-          phoneNumber: data.phoneNumber,
-        })
-      )
-      .catch((err) =>
-        console.error("학생 정보 에러:", err)
-      );
-  }, [studentLoginId, studentPk, navigate, loadLectures]);
+      try {
+        // 출제자 API에서 시험 목록을 받아옵니다.
+        const response = await fetch("/api/exams"); // 실제 API 경로로 수정 필요
+        if (!response.ok)
+          throw new Error(
+            "시험 목록을 불러오는 데 실패했습니다."
+          );
 
-  const handleLogout = async () => {
-    await fetch("/api/students/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-    sessionStorage.removeItem("studentLoginId");
-    sessionStorage.removeItem("studentId");
-    alert("로그아웃 되었습니다.");
-    navigate("/login");
-  };
+        const data = await response.json();
+        setExams(data); // 시험 목록 데이터를 상태에 저장
+      } catch (err) {
+        setError(err.message); // 에러 처리
+        console.error("시험 목록 불러오기 실패:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExams();
+  }, []); // 페이지가 로드될 때 한 번만 호출
+
+  // 로딩 중, 에러 발생 시 처리
+  if (loading) return <div>로딩 중...</div>;
+  if (error) return <div>에러: {error}</div>;
 
   return (
-    <div className="page-container">
-      <aside className="sidebar">
-        <h1 className="logo" onClick={goToMain}>
-          EduX
-        </h1>
-        <div className="avatar" />
-        <p className="logout" onClick={handleLogout}>
-          [ 로그아웃 ]
-        </p>
-        <div className="name">
-          {studentInfo.studentNumber}{" "}
-          <span className="thin">{studentInfo.name}</span>
-        </div>
-        <div className="email">
-          {studentInfo.phoneNumber}
-        </div>
-      </aside>
-
-      <main className="main">
-        <div className="card-grid">
-          {lectures.map((lec) => (
-            <LectureCard
-              key={lec.id}
-              title={lec.className}
-              authCode={lec.accessCode}
-              section={lec.section}
-              schedule={lec.time}
-            />
-          ))}
-
-          <div
-            className="card add-card"
-            onClick={() => setIsEnterOpen(true)}
-          >
-            + 인증코드 입력
-          </div>
-        </div>
-      </main>
-
-      {isEnterOpen && (
-        <LectureEnter
-          onClose={() => setIsEnterOpen(false)}
-          onSubmit={async (newLecture) => {
-            // 1) 새로고침 없이 전체 목록 다시 로드
-            await loadLectures();
-            setIsEnterOpen(false);
-          }}
-        />
-      )}
-    </div>
+    <MainLayout>
+      <div className="page-content">
+        {/* 시험 목록 */}
+        {exams.length === 0 ? (
+          <div>시험이 없습니다.</div>
+        ) : (
+          exams.map((exam, idx) => (
+            <div className="section-box" key={idx}>
+              <div className="section-title">
+                {exam.name}
+              </div>
+              <div className="section-actions">
+                <button className="action-button">
+                  시험 응시
+                </button>
+                <button className="action-button">
+                  시험 결과
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </MainLayout>
   );
 };
