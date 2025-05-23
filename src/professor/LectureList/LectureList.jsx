@@ -9,6 +9,8 @@ import axios from "axios";
 
 export const ProLecturepage = () => {
   const navigate = useNavigate();
+  const professorId = sessionStorage.getItem("professorId");
+
   const [lectures, setLectures] = useState([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -21,9 +23,6 @@ export const ProLecturepage = () => {
   department: "",
 });
 
-  const goToLogin = () => {
-    navigate("/login");
-  };
   const goToMain = () => {
     navigate("/main")
   };
@@ -38,35 +37,46 @@ export const ProLecturepage = () => {
     navigate("/prolecture"); // 상세 강의 페이지 경로로 이동
   };
 
-  useEffect(() => {
-  const fetchProfessorAndClassrooms = async () => {
-    const professorId = localStorage.getItem("professorId");
-    if (!professorId) return;
-
+  const handleLogout = async () => {
     try {
-      // 교수 정보 조회
-      const profRes = await axios.get(`/api/classrooms/professor/${professorId}`);
-      const { name, email, department } = profRes.data;
-      setProfessorInfo({ name, email, department });
-
-      // 강의실 목록 조회
-      const lectureRes = await axios.get(`/api/classrooms/professor/${professorId}/classrooms`);
-
-      //  필드명 매핑: className → title, time → schedule
-      const mappedLectures = lectureRes.data.map((lecture) => ({
-        ...lecture,
-        title: lecture.className,
-        schedule: lecture.time,
-      }));
-
-      setLectures(mappedLectures);
-    } catch (error) {
-      console.error("데이터 불러오기 실패:", error);
+      await axios.post("/api/professors/logout", {}, { withCredentials: true });
+    } catch (e) {
+      console.warn("로그아웃 실패:", e);
     }
+    sessionStorage.removeItem("professorId");
+    alert("로그아웃 되었습니다.");
+    navigate("/login");
   };
 
-  fetchProfessorAndClassrooms();
-}, []);
+   useEffect(() => {
+    if (!professorId) {
+      alert("로그인이 필요합니다.");
+      navigate("/login");
+      return;
+    }
+
+    const fetchProfessorAndClassrooms = async () => {
+      try {
+        const profRes = await axios.get(`/api/classrooms/professor/${professorId}`);
+        const { name, email, department } = profRes.data;
+        setProfessorInfo({ name, email, department });
+
+        const lectureRes = await axios.get(`/api/classrooms/professor/${professorId}/classrooms`);
+        const mappedLectures = lectureRes.data.map((lecture) => ({
+          ...lecture,
+          title: lecture.className,
+          schedule: lecture.time,
+        }));
+
+        setLectures(mappedLectures);
+      } catch (error) {
+        console.error("데이터 불러오기 실패:", error);
+        alert("강의 정보를 불러오는 데 실패했습니다.");
+      }
+    };
+
+    fetchProfessorAndClassrooms();
+  }, [navigate, professorId]);
 
   const handleAddLecture = (newLecture) => {
   const lectureWithMappedFields = {
@@ -112,7 +122,7 @@ export const ProLecturepage = () => {
           EduX
         </h1>
         <div className="avatar" />
-        <p className="logout" onClick={goToLogin}>
+        <p className="logout" onClick={handleLogout}>
           [ 로그아웃 ]
         </p>
         <div className="name">
