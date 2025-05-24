@@ -68,7 +68,7 @@ const QuestionCard = ({
       {/* 문제 입력 줄 */}
       <div className="question-input-row">
         <div className="question-meta">
-          <strong>{index + 1}.</strong>
+          <strong>{data.number}.</strong>
         </div>
         {editingQuestion ? (
           <textarea
