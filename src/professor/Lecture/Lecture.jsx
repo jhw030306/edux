@@ -11,8 +11,13 @@ import "./Lecture.css";
 export const ProLecture = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const goToExam = () => {
-    navigate("/exameditor");
+  const goToExam = (exam) => {
+    sessionStorage.setItem(
+      "selectedExam", 
+      JSON.stringify(exam));
+    navigate("/exameditor", {
+      state: { exam },
+    })
   };
   const _lecture = location.state?.lecture;
 
@@ -131,7 +136,7 @@ export const ProLecture = () => {
   //   setShowDeleteModal(false);
   // };
 
-  //시험 삭제제
+  //시험 삭제
   const handleConfirmDelete = async () => {
   const deletedExam = exams[examToDelete.idx];
 
@@ -220,7 +225,7 @@ export const ProLecture = () => {
             <div className="section-actions">
               <button
                 className="action-button"
-                onClick={goToExam}
+                onClick={() => goToExam(exam)}
               >
                 시험 입력
               </button>
