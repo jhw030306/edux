@@ -12,7 +12,7 @@ const ExamReady = () => {
     id: 1,
     title: "캡스톤디자인 중간고사",
     className: "캡스톤디자인 1분반",
-    testStartTime: "2025-05-25T23:59:59", // 미래 시간
+    testStartTime: "2025-05-27T23:59:59", // 미래 시간
     allowInternet: true,
     duration: 60,
     notice: "부정행위 금지, 시험 시간은 60분입니다.",
