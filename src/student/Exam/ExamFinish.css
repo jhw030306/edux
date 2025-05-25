@@ -1,0 +1,46 @@
+.exam-finish {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background-color: #f4f6f9;
+}
+
+.finish-box {
+  background: white;
+  border-radius: 12px;
+  padding: 60px 48px;
+  text-align: center;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  max-width: 500px;
+  width: 100%;
+}
+
+.finish-box h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: #000;
+}
+
+.finish-box p {
+  font-size: 16px;
+  color: #444;
+  margin-bottom: 32px;
+}
+
+.finish-box button {
+  background-color: #7d94b5;
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.finish-box button:hover {
+  background-color: #5a78a0;
+}
