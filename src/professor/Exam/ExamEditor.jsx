@@ -5,10 +5,11 @@ import ExamAccess from "./ExamAccess";
 import ExamNotice from "./ExamNotice";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamEditor.css";
-import axios from "axios"
 
 const ExamEditor = () => {
   const [activeTab, setActiveTab] = useState("settings");
+  const [showSubmitModal, setShowSubmitModal] =
+    useState(false);
 
   const [examData, setExamData] = useState({
     settings: {
@@ -27,7 +28,6 @@ const ExamEditor = () => {
     notice: "",
   });
 
-  // 세션에서 선택된 시험 ID
   const examId = JSON.parse(
     sessionStorage.getItem("selectedExam")
   )?.id;
@@ -39,11 +39,14 @@ const ExamEditor = () => {
     const fetchExamInfo = async () => {
       try {
         const res = await fetch(`/api/exams/${examId}`);
-        if (!res.ok) throw new Error("시험 정보 불러오기 실패");
+        if (!res.ok)
+          throw new Error("시험 정보 불러오기 실패");
         const data = await res.json();
 
-        const toDate = (str) => (str ? str.slice(0, 10) : "");
-        const toTime = (str) => (str ? str.slice(11, 16) : "");
+        const toDate = (str) =>
+          str ? str.slice(0, 10) : "";
+        const toTime = (str) =>
+          str ? str.slice(11, 16) : "";
 
         setExamData((prev) => ({
           ...prev,
@@ -54,7 +57,8 @@ const ExamEditor = () => {
             endTime: toTime(data.testEndTime),
             duration: prev.settings.duration,
             useSameScore: prev.settings.useSameScore,
-            scorePerQuestion: prev.settings.scorePerQuestion,
+            scorePerQuestion:
+              prev.settings.scorePerQuestion,
           },
           notice: data.notice || "",
         }));
@@ -148,6 +152,7 @@ const ExamEditor = () => {
     fetchExamInfo();
     fetchQuestions();
     fetchAccess();
+
   }, [examId]);
 
   // 로컬 상태 업데이트 헬퍼
@@ -225,15 +230,29 @@ const ExamEditor = () => {
         })),
       }));
 
-      alert("📝 전체 저장 완료!");
+
+      alert("📝 시험 저장 완료!");
     } catch (error) {
-      console.error("저장 중 오류 발생:", error);
-      alert("저장 중 오류가 발생했습니다: " + error.message);
+      console.error("저장 실패:", error);
+      alert(
+        "저장 중 오류가 발생했습니다: " + error.message
+      );
     }
   };
 
-  const handleSubmit = () =>
+  const handleSubmit = () => {
+    setShowSubmitModal(true);
+  };
+
+  const confirmSubmit = () => {
     console.log("🚀 제출:", examData);
+    alert("시험이 제출되었습니다.");
+    setShowSubmitModal(false);
+  };
+
+  const cancelSubmit = () => {
+    setShowSubmitModal(false);
+  };
 
   return (
     <MainLayout>
@@ -256,7 +275,6 @@ const ExamEditor = () => {
             >
               시험 작성
             </button>
-
             <button
               className={
                 activeTab === "access" ? "active" : ""
@@ -276,15 +294,13 @@ const ExamEditor = () => {
           </div>
           <div className="actions">
             <button onClick={handleSave}>저장</button>
-            {/* 일단 임시로 제출버튼도 저장과 똑같은 기능하게 해놓음 나중에 수정할것 */}
-            <button onClick={handleSave}>제출</button> 
+            <button onClick={handleSubmit}>제출</button>
           </div>
         </div>
 
         <div className="exam-editor-body">
           {activeTab === "questions" && (
             <ExamQuestions
-              examId={examId} 
               questions={examData.questions}
               setQuestions={updateQuestions}
               settings={examData.settings}
@@ -292,26 +308,50 @@ const ExamEditor = () => {
           )}
           {activeTab === "settings" && (
             <ExamSettings
-              examId={examId} 
               settings={examData.settings}
               updateSettings={updateSettings}
             />
           )}
           {activeTab === "access" && (
             <ExamAccess
-              examId={examId} 
               access={examData.access}
               updateAccess={updateAccess}
             />
           )}
           {activeTab === "notice" && (
             <ExamNotice
-              examId={examId} 
               notice={examData.notice}
               updateNotice={updateNotice}
             />
           )}
         </div>
+
+        {showSubmitModal && (
+          <div className="modal">
+            <div className="modal-box">
+              <h2>시험 제출</h2>
+              <p>시험을 제출하시겠습니까?</p>
+              <div className="delete-buttons">
+                <button
+                  className="submit-btn"
+                  onClick={confirmSubmit}
+                >
+                  제출
+                </button>
+                <button
+                  className="submit-btn"
+                  style={{
+                    backgroundColor: "#ccc",
+                    color: "#333",
+                  }}
+                  onClick={cancelSubmit}
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );
