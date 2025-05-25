@@ -23,8 +23,18 @@ export const ProLecturepage = () => {
   department: "",
 });
 
-  const goToMain = () => {
-    navigate("/main")
+  // 로그인 상태에 따라 분기
+   const goToHome = () => {
+    if (window.location.pathname === "/stulecturelist") {
+      //이미 LectureList화면이면 새로고침
+      window.location.reload();
+      return;
+    }
+    if (studentId) {
+      navigate("/stulecturelist");
+    } else {
+      navigate("/main");
+    }
   };
 
   // 강의 상세 페이지로 이동하는 함수
@@ -121,7 +131,7 @@ export const ProLecturepage = () => {
   return (
     <div className="page-container">
       <aside className="sidebar">
-        <h1 className="logo" onClick={goToMain}>
+        <h1 className="logo" onClick={goToHome}>
           EduX
         </h1>
         <div className="avatar" />
