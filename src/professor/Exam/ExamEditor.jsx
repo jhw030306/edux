@@ -280,7 +280,7 @@ const ExamEditor = () => {
           <div className="modal">
             <div className="modal-box">
               <h2>시험 제출</h2>
-              <p>정말로 시험을 제출하시겠습니까?</p>
+              <p>시험을 제출하시겠습니까?</p>
               <div className="delete-buttons">
                 <button
                   className="submit-btn"
