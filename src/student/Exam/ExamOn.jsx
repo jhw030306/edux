@@ -9,7 +9,7 @@ const ExamOn = () => {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(3600); // 60분 = 3600초
+  const [timeLeft, setTimeLeft] = useState(3600);
   const [showModal, setShowModal] = useState(false);
   const [unansweredCount, setUnansweredCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -33,8 +33,7 @@ const ExamOn = () => {
         id: 2,
         number: 2,
         type: "subjective",
-        question:
-          "JavaScript에서 변수를 선언하는 키워드 3가지는?",
+        question: "C++에서 변수를 선언하는 키워드 3가지는?",
       },
     ];
     setQuestions(dummyQuestions);
@@ -86,22 +85,27 @@ const ExamOn = () => {
 
   return (
     <MainLayout>
-      <div className="exam-wrapper">
-        <div
-          className="right-panel"
-          style={{ width: "100%" }}
-        >
-          <div className="header">
-            <div className="btns">
-              <div className="timer-box">
-                남은 시간: {formatTime(timeLeft)}
-              </div>
-              <button disabled>임시 저장</button>
-              <button onClick={handleSubmit}>제출</button>
+      <div className="exam-wrapper exam-on-layout">
+        {/* 인터넷 패널 */}
+        <div className="internet-panel">
+          <iframe
+            src="https://www.google.com"
+            title="internet"
+            className="internet-iframe"
+          />
+        </div>
+
+        {/* 시험 영역 */}
+        <div className="exam-on-content">
+          <div className="top-controls">
+            <div className="timer-box">
+              남은 시간: {formatTime(timeLeft)}
             </div>
+            <button disabled>임시 저장</button>
+            <button onClick={handleSubmit}>제출</button>
           </div>
 
-          <div className="question-view">
+          <div className="question-box">
             {currentQuestion && (
               <>
                 <h4>
@@ -151,43 +155,24 @@ const ExamOn = () => {
             )}
           </div>
 
-          <div className="navigator">
-            <button
-              disabled={currentIndex === 0}
-              onClick={() =>
-                setCurrentIndex(currentIndex - 1)
-              }
-            >
-              ←
-            </button>
-            <div className="answer-sheet">
-              {questions.map((q, idx) => (
-                <button
-                  key={q.id}
-                  className={`num-btn ${
-                    idx === currentIndex ? "active" : ""
-                  } ${
-                    answers[q.id] != null ? "answered" : ""
-                  }`}
-                  onClick={() => setCurrentIndex(idx)}
-                >
-                  {idx + 1}
-                </button>
-              ))}
-            </div>
-            <button
-              disabled={
-                currentIndex === questions.length - 1
-              }
-              onClick={() =>
-                setCurrentIndex(currentIndex + 1)
-              }
-            >
-              →
-            </button>
+          <div className="answer-sheet">
+            {questions.map((q, idx) => (
+              <button
+                key={q.id}
+                className={`num-btn ${
+                  idx === currentIndex ? "active" : ""
+                } ${
+                  answers[q.id] != null ? "answered" : ""
+                }`}
+                onClick={() => setCurrentIndex(idx)}
+              >
+                {idx + 1}
+              </button>
+            ))}
           </div>
         </div>
 
+        {/* 제출 모달 */}
         {showModal && (
           <div className="modal">
             <div className="modal-box">

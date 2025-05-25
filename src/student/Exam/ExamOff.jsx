@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
-import "./ExamTakingLayout.css";
+import "./ExamTakingLayout.css"; // 기존 공통 스타일 포함
 
 const ExamOff = () => {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ const ExamOff = () => {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(3600); // 60분 = 3600초
+  const [timeLeft, setTimeLeft] = useState(3600);
   const [showModal, setShowModal] = useState(false);
   const [unansweredCount, setUnansweredCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -86,28 +86,18 @@ const ExamOff = () => {
 
   return (
     <MainLayout>
-      <div className="exam-wrapper">
-        <div
-          className="right-panel"
-          style={{ width: "100%" }}
-        >
-          <div className="header">
-            <div className="btns">
-              <div className="timer-box">
-                남은 시간: {formatTime(timeLeft)}
-              </div>
-              <button disabled>임시 저장</button>
-              <button onClick={handleSubmit}>제출</button>
-            </div>
-          </div>
-
-          <div className="question-view">
+      <div className="exam-wrapper exam-off-layout">
+        <div className="exam-panels">
+          {/* 좌측 문제 영역 */}
+          <div className="left-panel">
             {currentQuestion && (
-              <>
+              <div className="question-box">
                 <h4>
                   {currentQuestion.number}.{" "}
                   {currentQuestion.question}
                 </h4>
+
+                {/* 객관식 */}
                 {currentQuestion.type === "multiple" && (
                   <div className="options">
                     {currentQuestion.distractor.map(
@@ -134,6 +124,8 @@ const ExamOff = () => {
                     )}
                   </div>
                 )}
+
+                {/* 주관식 */}
                 {currentQuestion.type === "subjective" && (
                   <textarea
                     value={
@@ -147,19 +139,25 @@ const ExamOff = () => {
                     }
                   />
                 )}
-              </>
+              </div>
             )}
           </div>
 
-          <div className="navigator">
-            <button
-              disabled={currentIndex === 0}
-              onClick={() =>
-                setCurrentIndex(currentIndex - 1)
-              }
-            >
-              ←
+          {/* 우측 패널 (타이머, 버튼, 답안지) */}
+          <div className="right-panel">
+            <div className="timer-box">
+              남은 시간: {formatTime(timeLeft)}
+            </div>
+            <button className="submit-btn" disabled>
+              임시 저장
             </button>
+            <button
+              className="submit-btn"
+              onClick={handleSubmit}
+            >
+              제출
+            </button>
+
             <div className="answer-sheet">
               {questions.map((q, idx) => (
                 <button
@@ -175,54 +173,45 @@ const ExamOff = () => {
                 </button>
               ))}
             </div>
-            <button
-              disabled={
-                currentIndex === questions.length - 1
-              }
-              onClick={() =>
-                setCurrentIndex(currentIndex + 1)
-              }
-            >
-              →
-            </button>
           </div>
         </div>
+      </div>
 
-        {showModal && (
-          <div className="modal">
-            <div className="modal-box">
-              <h2>시험 제출</h2>
-              <p>정말로 시험을 제출하시겠습니까?</p>
-              {unansweredCount > 0 && (
-                <p>
-                  남은 문제&nbsp;
-                  <strong>
-                    {unansweredCount}/{totalCount}
-                  </strong>
-                </p>
-              )}
-              <div className="delete-buttons">
-                <button
-                  className="submit-btn"
-                  onClick={confirmSubmit}
-                >
-                  제출
-                </button>
-                <button
-                  className="submit-btn"
-                  style={{
-                    backgroundColor: "#ccc",
-                    color: "#333",
-                  }}
-                  onClick={() => setShowModal(false)}
-                >
-                  취소
-                </button>
-              </div>
+      {/* 제출 확인 모달 */}
+      {showModal && (
+        <div className="modal">
+          <div className="modal-box">
+            <h2>시험 제출</h2>
+            <p>정말로 시험을 제출하시겠습니까?</p>
+            {unansweredCount > 0 && (
+              <p>
+                남은 문제&nbsp;
+                <strong>
+                  {unansweredCount}/{totalCount}
+                </strong>
+              </p>
+            )}
+            <div className="delete-buttons">
+              <button
+                className="submit-btn"
+                onClick={confirmSubmit}
+              >
+                제출
+              </button>
+              <button
+                className="submit-btn"
+                style={{
+                  backgroundColor: "#ccc",
+                  color: "#333",
+                }}
+                onClick={() => setShowModal(false)}
+              >
+                취소
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </MainLayout>
   );
 };
