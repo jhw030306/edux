@@ -5,6 +5,7 @@ import ExamAccess from "./ExamAccess";
 import ExamNotice from "./ExamNotice";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamEditor.css";
+import axios from "axios"
 
 const ExamEditor = () => {
   const [activeTab, setActiveTab] = useState("settings");
@@ -131,6 +132,23 @@ const ExamEditor = () => {
     if (examId) {
       fetchExamInfo();
       fetchQuestions();
+
+      //허용범위 불러오기
+      axios
+        .get(`/api/exam-range/${examId}`)
+        .then((res) => {
+          const { mode, rangeDetails } = res.data;
+          setExamData((prev) => ({
+           ...prev,
+           access: {
+            mode,                      
+            allowedSites: rangeDetails 
+          },
+        }));
+      })
+      .catch((err) =>
+        console.error("허용범위 조회 실패:", err)
+      );
     }
   }, [examId]);
 
@@ -138,10 +156,18 @@ const ExamEditor = () => {
     setExamData((prev) => ({ ...prev, questions }));
   const updateSettings = (settings) =>
     setExamData((prev) => ({ ...prev, settings }));
-  const updateAccess = (access) =>
-    setExamData((prev) => ({ ...prev, access }));
-  const updateNotice = (notice) =>
-    setExamData((prev) => ({ ...prev, notice }));
+  
+  //허용범위 변경 시에는 로컬 상태만 업데이트 (저장 버튼 누를 때 서버로 전송)
+
+  const updateAccess = (newAccess) => {
+  setExamData(prev => ({ ...prev, access: newAccess }));
+  };
+
+
+  //공지 변경 시 로컬상태만 업데이트 (저장 버튼 누를 시 서버로 전송)
+  const updateNotice = (newNotice) => {
+   setExamData(prev => ({ ...prev, notice: newNotice }));
+  };
 
   //저장
   const handleSave = async () => {
@@ -171,43 +197,47 @@ const ExamEditor = () => {
     });
 
     if (!examInfoRes.ok) throw new Error("시험 정보 저장 실패");
-    /*
-    // ✅ 2. 문제 리스트 저장
-    const questionsRes = await fetch("/api/exams/autosave/bulk", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(examData.questions.map((q, idx) => ({
-        ...q,
-        examId: examId,
-        number: idx + 1,
-      }))),
-    });
 
-    if (!questionsRes.ok) throw new Error("문제 저장 실패");
+    // 2. 문제 전체 덮어쓰기
+      await axios.post("/api/exam-questions/autosave/bulk",
+        examData.questions.map((q, idx) => ({
+          id: q.id,               // 기존에 있던 id는 덮어쓰기, 없으면 신규 생성
+          examId,
+          number: idx + 1,
+          type: q.type,
+          question: q.question,
+          distractor: q.options,
+          answer: q.type === "multiple"
+            ? (Array.isArray(q.answer)
+                ? q.answer.map(a => a + 1)
+                : q.answer + 1)
+            : q.answer,
+          questionScore: q.score,
+        }))
+      );
 
-    // ✅ 3. 허용 범위 저장
-    const accessRes = await fetch("/api/exams/save", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        examId: examId,
+      // 3. 허용범위 저장
+      await axios.post("/api/exam-range/save", {
+        examId,
+        mode: examData.access.mode, 
         rangeDetails: examData.access.allowedSites,
-      }),
-    });
-    
-    if (!accessRes.ok) throw new Error("허용 범위 저장 실패");
-*/
-    alert("📝 시험 저장 완료!");
+      });
 
-  } catch (error) {
-    console.error("저장 실패:", error);
-    alert("저장 중 오류가 발생했습니다: " + error.message);
-  }
-};
+      // 4. 저장 후 로컬 상태에 문제 번호 다시 붙여주기
+     setExamData(prev => ({
+      ...prev,
+      questions: prev.questions.map((q, idx) => ({
+        ...q,
+        number: idx + 1
+      }))
+    }));
+
+      alert("📝 전체 저장 완료!");
+    } catch (error) {
+      console.error("저장 중 오류 발생:", error);
+      alert("저장 중 오류가 발생했습니다: " + error.message);
+    }
+  };
 
   const handleSubmit = () =>
     console.log("🚀 제출:", examData);
@@ -253,13 +283,15 @@ const ExamEditor = () => {
           </div>
           <div className="actions">
             <button onClick={handleSave}>저장</button>
-            <button onClick={handleSubmit}>제출</button>
+            {/* 일단 임시로 제출버튼도 저장과 똑같은 기능하게 해놓음 나중에 수정할것 */}
+            <button onClick={handleSave}>제출</button> 
           </div>
         </div>
 
         <div className="exam-editor-body">
           {activeTab === "questions" && (
             <ExamQuestions
+              examId={examId} 
               questions={examData.questions}
               setQuestions={updateQuestions}
               settings={examData.settings}
@@ -267,18 +299,21 @@ const ExamEditor = () => {
           )}
           {activeTab === "settings" && (
             <ExamSettings
+              examId={examId} 
               settings={examData.settings}
               updateSettings={updateSettings}
             />
           )}
           {activeTab === "access" && (
             <ExamAccess
+              examId={examId} 
               access={examData.access}
               updateAccess={updateAccess}
             />
           )}
           {activeTab === "notice" && (
             <ExamNotice
+              examId={examId} 
               notice={examData.notice}
               updateNotice={updateNotice}
             />

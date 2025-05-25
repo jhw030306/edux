@@ -7,8 +7,19 @@ import "./LectureList.css";
 export const StuLecturepage = () => {
   const navigate = useNavigate();
 
-  const goToMain = () => {
-    navigate("/main");
+  // 로그인 상태에 따라 분기
+   const goToHome = () => {
+    // 이미 /prolecturelist 페이지라면 브라우저 새로고침
+    if (window.location.pathname === "/prolecturelist") {
+      window.location.reload();
+      return;
+    }
+    // 아니면 SPA 네비게이트
+    if (professorId) {
+      navigate("/prolecturelist");
+    } else {
+      navigate("/main");
+    }
   };
 
   const goToLecture = (lecture) => {
@@ -79,7 +90,7 @@ export const StuLecturepage = () => {
     <div className="page-container">
       <aside className="sidebar">
 
-        <h1 className="logo" onClick={goToMain}>
+        <h1 className="logo" onClick={goToHome}>
           EduX
         </h1>
         <div className="avatar" />
