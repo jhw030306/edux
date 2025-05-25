@@ -11,6 +11,10 @@ import { StuLecturepage } from "./student/LectureList/LectureList";
 import { ProLecture } from "./professor/Lecture/Lecture";
 import { StuLecture } from "./student/Lecture/Lecture";
 import ExamEditor from "./professor/Exam/ExamEditor";
+import ExamReady from "./student/Exam/ExamReady";
+import ExamOff from "./student/Exam/ExamOff";
+import ExamOn from "./student/Exam/ExamOn";
+import ExamFinish from "./student/Exam/ExamFinish";
 
 function App() {
   return (
@@ -40,6 +44,10 @@ function App() {
       <Route path="/prolecture" element={<ProLecture />} />
       <Route path="/stulecture" element={<StuLecture />} />
       <Route path="/exameditor" element={<ExamEditor />} />
+      <Route path="/examready" element={<ExamReady />} />
+      <Route path="/examoff" element={<ExamOff />} />
+      <Route path="/examon" element={<ExamOn />} />
+      <Route path="/examfinish" element={<ExamFinish />} />
     </Routes>
   );
 }
