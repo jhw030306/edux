@@ -1,124 +1,110 @@
-/* ExamTakingLayout.css */
+/* 공통 */
 .exam-wrapper {
-  display: flex;
+  background: #f4f6f9;
+  width: 100%;
   height: 100vh;
-  background-color: #f4f6f9;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.left-panel {
+/* ✅ ON 전용: iframe 왼쪽, 문제+답안+버튼 오른쪽 */
+.exam-on-layout {
+  display: flex;
+}
+
+.internet-panel {
   flex: 1;
-  background: #e9edf2;
-  border-right: 1px solid #cfd4dc;
+  border-right: 1px solid #ccc;
+  background: #fff;
 }
 
-.left-panel iframe {
+.internet-iframe {
   width: 100%;
   height: 100%;
   border: none;
 }
 
-.right-panel {
-  flex: 2;
+.exam-on-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
   padding: 24px;
-  background-color: #ffffff;
+  gap: 20px;
+  background: #ffffff;
 }
 
-.header {
+/* ✅ OFF 전용: 문제 우측, 답안 영역 포함 */
+.exam-panels {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 10px;
+  gap: 20px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0;
+  padding: 2px;
 }
 
-.header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  flex: 1;
-}
-
-.btns {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.timer-box {
-  font-size: 16px;
-  font-weight: bold;
-  color: #1a2a3a;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+.left-panel {
+  flex: 2;
   background: #fff;
-  margin-right: 16px;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.btns button {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  background-color: #1a2a3a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btns button:hover {
-  background-color: #2c3e50;
-}
-
-.question-view {
-  flex: 1;
-  margin: 12px 0;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 16px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  min-height: 160px;
+.right-panel {
+  width: 260px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 
-.question-view h4 {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 12px;
+/* 공통 질문 영역 */
+.question-box {
+  padding: 12px 20px; /* ✅ 위아래 여백 조정 */
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background-color: #fff;
+  text-align: left;
+  height: auto;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.question-box h4 {
+  margin-top: 0; /* ✅ 상단 여백 제거 */
+  margin-bottom: 12px; /* 보기와의 간격 */
+  font-weight: bold;
+  text-align: left;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* ✅ 좌측 정렬 */
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .options label {
-  display: block;
-  margin: 6px 0;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
   cursor: pointer;
 }
 
 textarea {
   width: 100%;
-  height: 100px;
-  padding: 10px;
-  font-size: 14px;
+  min-height: 120px;
+  padding: 12px;
+  font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  resize: none;
   background: #fafafa;
+  resize: vertical; /* 또는 none */
+  box-sizing: border-box;
 }
 
-.navigator {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-top: 16px;
-}
-
+/* 답안지 버튼 */
 .answer-sheet {
   display: flex;
   gap: 6px;
@@ -151,6 +137,40 @@ textarea {
   border-color: #6495ed;
 }
 
+/* 상단 컨트롤 (타이머, 저장, 제출) */
+.top-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.timer-box {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.top-controls button {
+  padding: 8px 16px;
+  background: #1a2a3a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.top-controls button:hover {
+  background: #2c3e50;
+}
+
+/* 모달 */
 .modal {
   position: fixed;
   top: 0;
@@ -204,4 +224,34 @@ textarea {
 
 .submit-btn:hover {
   background-color: #092b47;
+}
+.exam-off-layout {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.exam-panels {
+  display: flex;
+  gap: 20px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.left-panel {
+  flex: 2;
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.right-panel {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
 }
