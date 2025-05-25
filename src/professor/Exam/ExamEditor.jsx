@@ -166,6 +166,7 @@ const ExamEditor = () => {
     }
 
     try {
+      // 1. 시험 정보 저장
       const examInfoRes = await fetch("/api/exams/update", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -181,9 +182,45 @@ const ExamEditor = () => {
       if (!examInfoRes.ok)
         throw new Error("시험 정보 저장 실패");
 
-      alert("📝 시험 저장 완료!");
+      // 2. 문제 전체 덮어쓰기
+      await axios.post(
+        "/api/exam-questions/autosave/bulk",
+        examData.questions.map((q, idx) => ({
+          id: q.id,
+          examId,
+          number: idx + 1,
+          type: q.type,
+          question: q.question,
+          distractor: q.options,
+          answer:
+            q.type === "multiple"
+              ? Array.isArray(q.answer)
+                ? q.answer.map((a) => a + 1)
+                : q.answer + 1
+              : q.answer,
+          questionScore: q.score,
+        }))
+      );
+
+      // 3. 허용범위 저장
+      await axios.post("/api/exam-range/save", {
+        examId,
+        mode: examData.access.mode,
+        rangeDetails: examData.access.allowedSites,
+      });
+
+      // 4. 번호 재정렬
+      setExamData((prev) => ({
+        ...prev,
+        questions: prev.questions.map((q, idx) => ({
+          ...q,
+          number: idx + 1,
+        })),
+      }));
+
+      alert("📝 전체 저장 완료!");
     } catch (error) {
-      console.error("저장 실패:", error);
+      console.error("저장 중 오류 발생:", error);
       alert(
         "저장 중 오류가 발생했습니다: " + error.message
       );
