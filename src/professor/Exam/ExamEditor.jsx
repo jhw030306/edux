@@ -20,7 +20,7 @@ const ExamEditor = () => {
       useSameScore: true,
       scorePerQuestion: 5,
     },
-    questions: [],
+    questions: [],    // 항상 배열
     access: {
       mode: "deny",
       allowedSites: [],
@@ -33,6 +33,9 @@ const ExamEditor = () => {
   )?.id;
 
   useEffect(() => {
+    if (!examId) return;
+
+    // 1) 시험 기본 정보 불러오기
     const fetchExamInfo = async () => {
       try {
         const res = await fetch(`/api/exams/${examId}`);
@@ -64,86 +67,102 @@ const ExamEditor = () => {
       }
     };
 
+    // 2) 시험 문제 불러오기
     const fetchQuestions = async () => {
       try {
-        const res = await fetch(
+        const res = await axios.get(
           `/api/exam-questions/exam/all/${examId}`
         );
-        if (!res.ok) throw new Error("문제 불러오기 실패");
-        const data = await res.json();
+        // 번호 순 정렬
+        const list = res.data.sort(
+          (a, b) => a.number - b.number
+        );
 
-        data.sort((a, b) => a.number - b.number);
-
-        const converted = data.map((q) => {
+        // 서버 DTO → 프론트포맷 변환
+        const converted = list.map((q) => {
           const base = {
             id: q.id,
             type: q.type,
-            question: q.question,
-            score: q.questionScore,
+            question: q.question || "",
+            score: q.questionScore ?? 0,
             number: q.number,
           };
-
           if (q.type === "multiple") {
-            const options = q.distractor || [];
-            const rawAnswerIndex = Number(q.answer);
-            const answerIndex =
-              !isNaN(rawAnswerIndex) && rawAnswerIndex > 0
-                ? rawAnswerIndex - 1
-                : null;
-
-            return {
-              ...base,
-              options,
-              answer: answerIndex,
-            };
-          }
-
+            const opts = q.distractor || [];
+            // DB엔 1-based index 배열로 저장되어 있으니, 0-based로 변환
+            const ans = Array.isArray(q.answer)
+              ? q.answer.map((idx) => idx - 1)
+             : [];
+          return { ...base, options: opts, answer: ans };
+        }
           if (q.type === "ox") {
-            const normalized = (
-              q.answer || ""
-            ).toUpperCase();
+            const up = (q.answer || "").toUpperCase();
             return {
               ...base,
               options: ["O", "X"],
               answer:
-                normalized === "O" || normalized === "X"
-                  ? normalized
-                  : null,
+                up === "O" || up === "X" ? up : null,
             };
           }
-
-          if (q.type === "subjective") {
-            return {
-              ...base,
-              answer:
-                typeof q.answer === "string"
-                  ? q.answer
-                  : "",
-              options: [],
-            };
-          }
-
-          return base;
+          // subjective
+          return {
+            ...base,
+            options: [],
+            answer:
+              typeof q.answer === "string" ? q.answer : "",
+          };
         });
 
-        console.log("📦 변환된 문제 목록:", converted);
         setExamData((prev) => ({
           ...prev,
           questions: converted,
         }));
       } catch (err) {
-        console.error("문제 불러오기 실패:", err);
+        if (err.response?.status === 404) {
+          // 문제 하나도 없으면 빈 배열 상태 유지
+          setExamData((prev) => ({
+            ...prev,
+            questions: [],
+          }));
+        } else {
+          console.error("문제 불러오기 실패:", err);
+        }
       }
     };
 
-    if (examId) {
-      fetchExamInfo();
-      fetchQuestions();
-    }
+    // 3) 허용 범위 불러오기
+    const fetchAccess = () => {
+      axios
+        .get(`/api/exam-range/${examId}`)
+        .then((res) => {
+          const { mode, rangeDetails } = res.data;
+          setExamData((prev) => ({
+            ...prev,
+            access: {
+              mode,
+              allowedSites: rangeDetails,
+            },
+          }));
+        })
+        .catch((err) =>
+          console.error("허용범위 조회 실패:", err)
+        );
+    };
+
+    fetchExamInfo();
+    fetchQuestions();
+    fetchAccess();
+
   }, [examId]);
 
-  const updateQuestions = (questions) =>
-    setExamData((prev) => ({ ...prev, questions }));
+  // 로컬 상태 업데이트 헬퍼
+  const updateQuestions = (updater) =>
+   setExamData(prev => ({
+     ...prev,
+     questions: typeof updater === "function"
+       ? updater(prev.questions)
+       : updater
+   }));
   const updateSettings = (settings) =>
     setExamData((prev) => ({ ...prev, settings }));
   const updateAccess = (access) =>
@@ -151,35 +170,66 @@ const ExamEditor = () => {
   const updateNotice = (notice) =>
     setExamData((prev) => ({ ...prev, notice }));
 
+  // 전체 저장
   const handleSave = async () => {
-    const examId = JSON.parse(
-      sessionStorage.getItem("selectedExam")
-    )?.id;
-    const selectedExam = JSON.parse(
-      sessionStorage.getItem("selectedExam")
-    );
-    const examTitle = selectedExam?.title || "";
-
     if (!examId) {
       alert("시험 정보가 없습니다.");
       return;
     }
 
     try {
-      const examInfoRes = await fetch("/api/exams/update", {
+      // 1) 시험 정보 저장
+      const selected = JSON.parse(
+        sessionStorage.getItem("selectedExam")
+      );
+      await fetch("/api/exams/update", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: examId,
-          title: examTitle,
+          title: selected?.title || "",
           testStartTime: `${examData.settings.date}T${examData.settings.startTime}`,
           testEndTime: `${examData.settings.date}T${examData.settings.endTime}`,
           notice: examData.notice,
         }),
       });
 
-      if (!examInfoRes.ok)
-        throw new Error("시험 정보 저장 실패");
+      // 2) 문제 전체 bulk autosave
+      await axios.post(
+        "/api/exam-questions/autosave/bulk",
+        examData.questions.map((q, idx) => ({
+          id: q.id,
+          examId,
+          number: idx + 1,
+          type: q.type,
+          question: q.question,
+          distractor: q.options,
+          answer:
+           q.type === "multiple"
+             ? Array.isArray(q.answer)
+                ? q.answer.map((a) => a + 1)
+                : []
+              : q.answer,
+          questionScore: q.score,
+        }))
+      );
+
+      // 3) 허용 범위 저장
+      await axios.post("/api/exam-range/save", {
+        examId,
+        mode: examData.access.mode,
+        rangeDetails: examData.access.allowedSites,
+      });
+
+      // 4) 로컬 번호 재정렬
+      setExamData((prev) => ({
+        ...prev,
+        questions: prev.questions.map((q, i) => ({
+          ...q,
+          number: i + 1,
+        })),
+      }));
+
 
       alert("📝 시험 저장 완료!");
     } catch (error) {
