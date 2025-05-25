@@ -5,6 +5,7 @@ import ExamAccess from "./ExamAccess";
 import ExamNotice from "./ExamNotice";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamEditor.css";
+import axios from "axios";
 
 const ExamEditor = () => {
   const [activeTab, setActiveTab] = useState("settings");
@@ -301,6 +302,7 @@ const ExamEditor = () => {
         <div className="exam-editor-body">
           {activeTab === "questions" && (
             <ExamQuestions
+              examId={examId}  
               questions={examData.questions}
               setQuestions={updateQuestions}
               settings={examData.settings}
