@@ -8,6 +8,8 @@ import "./ExamEditor.css";
 
 const ExamEditor = () => {
   const [activeTab, setActiveTab] = useState("settings");
+  const [showSubmitModal, setShowSubmitModal] =
+    useState(false);
 
   const [examData, setExamData] = useState({
     settings: {
@@ -26,19 +28,22 @@ const ExamEditor = () => {
     notice: "",
   });
 
-    // ✅ 시험 ID 추출
-  const examId = JSON.parse(sessionStorage.getItem("selectedExam"))?.id;
+  const examId = JSON.parse(
+    sessionStorage.getItem("selectedExam")
+  )?.id;
 
-  // ✅ 시험 정보 불러오기
   useEffect(() => {
     const fetchExamInfo = async () => {
       try {
         const res = await fetch(`/api/exams/${examId}`);
-        if (!res.ok) throw new Error("시험 정보 불러오기 실패");
+        if (!res.ok)
+          throw new Error("시험 정보 불러오기 실패");
         const data = await res.json();
 
-        const toDate = (str) => (str ? str.slice(0, 10) : "");
-        const toTime = (str) => (str ? str.slice(11, 16) : "");
+        const toDate = (str) =>
+          str ? str.slice(0, 10) : "";
+        const toTime = (str) =>
+          str ? str.slice(11, 16) : "";
 
         setExamData((prev) => ({
           ...prev,
@@ -47,10 +52,10 @@ const ExamEditor = () => {
             date: toDate(data.testStartTime),
             startTime: toTime(data.testStartTime),
             endTime: toTime(data.testEndTime),
-            // 나머지는 그대로 유지하거나 사용자 입력 유도
             duration: prev.settings.duration,
             useSameScore: prev.settings.useSameScore,
-            scorePerQuestion: prev.settings.scorePerQuestion,
+            scorePerQuestion:
+              prev.settings.scorePerQuestion,
           },
           notice: data.notice || "",
         }));
@@ -59,14 +64,14 @@ const ExamEditor = () => {
       }
     };
 
-    //시험 문제 불러오기
     const fetchQuestions = async () => {
       try {
-        const res = await fetch(`/api/exam-questions/exam/all/${examId}`);
+        const res = await fetch(
+          `/api/exam-questions/exam/all/${examId}`
+        );
         if (!res.ok) throw new Error("문제 불러오기 실패");
         const data = await res.json();
 
-          // ✅ 문제 번호순 정렬
         data.sort((a, b) => a.number - b.number);
 
         const converted = data.map((q) => {
@@ -75,49 +80,53 @@ const ExamEditor = () => {
             type: q.type,
             question: q.question,
             score: q.questionScore,
-            number: q.number  // ✅ 문제 번호 반영
+            number: q.number,
           };
 
-        if (q.type === "multiple") {
-          const options = q.distractor || [];
+          if (q.type === "multiple") {
+            const options = q.distractor || [];
+            const rawAnswerIndex = Number(q.answer);
+            const answerIndex =
+              !isNaN(rawAnswerIndex) && rawAnswerIndex > 0
+                ? rawAnswerIndex - 1
+                : null;
 
-          const rawAnswerIndex = Number(q.answer); // ex: "3" → 3
-          const answerIndex =
-            !isNaN(rawAnswerIndex) && rawAnswerIndex > 0
-              ? rawAnswerIndex - 1
-              : null;
+            return {
+              ...base,
+              options,
+              answer: answerIndex,
+            };
+          }
 
-          return {
-            ...base,
-            options,
-            answer: answerIndex,
-          };
-        }
+          if (q.type === "ox") {
+            const normalized = (
+              q.answer || ""
+            ).toUpperCase();
+            return {
+              ...base,
+              options: ["O", "X"],
+              answer:
+                normalized === "O" || normalized === "X"
+                  ? normalized
+                  : null,
+            };
+          }
 
+          if (q.type === "subjective") {
+            return {
+              ...base,
+              answer:
+                typeof q.answer === "string"
+                  ? q.answer
+                  : "",
+              options: [],
+            };
+          }
 
+          return base;
+        });
 
-        if (q.type === "ox") {
-          const normalized = (q.answer || "").toUpperCase();
-          return {
-            ...base,
-            options: ["O", "X"],
-            answer: normalized === "O" || normalized === "X" ? normalized : null,
-          };
-        }
-
-        if (q.type === "subjective") {
-          return {
-            ...base,
-            answer: typeof q.answer === "string" ? q.answer : "",
-            options: [],
-          };
-        }
-
-        return base;
-      });
-      console.log("📦 변환된 문제 목록:", converted);
-
-
+        console.log("📦 변환된 문제 목록:", converted);
         setExamData((prev) => ({
           ...prev,
           questions: converted,
@@ -126,7 +135,6 @@ const ExamEditor = () => {
         console.error("문제 불러오기 실패:", err);
       }
     };
-
 
     if (examId) {
       fetchExamInfo();
@@ -143,74 +151,58 @@ const ExamEditor = () => {
   const updateNotice = (notice) =>
     setExamData((prev) => ({ ...prev, notice }));
 
-  //저장
   const handleSave = async () => {
-  const examId = JSON.parse(sessionStorage.getItem("selectedExam"))?.id;
-  const selectedExam = JSON.parse(sessionStorage.getItem("selectedExam"));
-  const examTitle = selectedExam?.title || "";
+    const examId = JSON.parse(
+      sessionStorage.getItem("selectedExam")
+    )?.id;
+    const selectedExam = JSON.parse(
+      sessionStorage.getItem("selectedExam")
+    );
+    const examTitle = selectedExam?.title || "";
 
-  if (!examId) {
-    alert("시험 정보가 없습니다.");
-    return;
-  }
+    if (!examId) {
+      alert("시험 정보가 없습니다.");
+      return;
+    }
 
-  try {
-    // ✅ 1. 시험 정보 저장
-    const examInfoRes = await fetch("/api/exams/update", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: examId,
-        title: examTitle,
-        testStartTime: `${examData.settings.date}T${examData.settings.startTime}`,
-        testEndTime: `${examData.settings.date}T${examData.settings.endTime}`,
-        notice: examData.notice,
-      }),
-    });
+    try {
+      const examInfoRes = await fetch("/api/exams/update", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: examId,
+          title: examTitle,
+          testStartTime: `${examData.settings.date}T${examData.settings.startTime}`,
+          testEndTime: `${examData.settings.date}T${examData.settings.endTime}`,
+          notice: examData.notice,
+        }),
+      });
 
-    if (!examInfoRes.ok) throw new Error("시험 정보 저장 실패");
-    /*
-    // ✅ 2. 문제 리스트 저장
-    const questionsRes = await fetch("/api/exams/autosave/bulk", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(examData.questions.map((q, idx) => ({
-        ...q,
-        examId: examId,
-        number: idx + 1,
-      }))),
-    });
+      if (!examInfoRes.ok)
+        throw new Error("시험 정보 저장 실패");
 
-    if (!questionsRes.ok) throw new Error("문제 저장 실패");
+      alert("📝 시험 저장 완료!");
+    } catch (error) {
+      console.error("저장 실패:", error);
+      alert(
+        "저장 중 오류가 발생했습니다: " + error.message
+      );
+    }
+  };
 
-    // ✅ 3. 허용 범위 저장
-    const accessRes = await fetch("/api/exams/save", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        examId: examId,
-        rangeDetails: examData.access.allowedSites,
-      }),
-    });
-    
-    if (!accessRes.ok) throw new Error("허용 범위 저장 실패");
-*/
-    alert("📝 시험 저장 완료!");
+  const handleSubmit = () => {
+    setShowSubmitModal(true);
+  };
 
-  } catch (error) {
-    console.error("저장 실패:", error);
-    alert("저장 중 오류가 발생했습니다: " + error.message);
-  }
-};
-
-  const handleSubmit = () =>
+  const confirmSubmit = () => {
     console.log("🚀 제출:", examData);
+    alert("시험이 제출되었습니다.");
+    setShowSubmitModal(false);
+  };
+
+  const cancelSubmit = () => {
+    setShowSubmitModal(false);
+  };
 
   return (
     <MainLayout>
@@ -233,7 +225,6 @@ const ExamEditor = () => {
             >
               시험 작성
             </button>
-
             <button
               className={
                 activeTab === "access" ? "active" : ""
@@ -284,6 +275,33 @@ const ExamEditor = () => {
             />
           )}
         </div>
+
+        {showSubmitModal && (
+          <div className="modal">
+            <div className="modal-box">
+              <h2>시험 제출</h2>
+              <p>정말로 시험을 제출하시겠습니까?</p>
+              <div className="delete-buttons">
+                <button
+                  className="submit-btn"
+                  onClick={confirmSubmit}
+                >
+                  제출
+                </button>
+                <button
+                  className="submit-btn"
+                  style={{
+                    backgroundColor: "#ccc",
+                    color: "#333",
+                  }}
+                  onClick={cancelSubmit}
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );
