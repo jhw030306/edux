@@ -150,3 +150,58 @@ textarea {
   background: #9ec9ff;
   border-color: #6495ed;
 }
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 10px;
+  width: 380px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-box h2 {
+  font-size: 20px;
+  margin-bottom: 14px;
+}
+
+.modal-box p {
+  font-size: 15px;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.delete-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.submit-btn {
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #0d365c;
+  color: white;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #092b47;
+}

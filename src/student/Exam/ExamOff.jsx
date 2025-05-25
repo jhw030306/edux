@@ -10,6 +10,9 @@ const ExamOff = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(3600); // 60분 = 3600초
+  const [showModal, setShowModal] = useState(false);
+  const [unansweredCount, setUnansweredCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     const dummyQuestions = [
@@ -35,6 +38,7 @@ const ExamOff = () => {
       },
     ];
     setQuestions(dummyQuestions);
+    setTotalCount(dummyQuestions.length);
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -66,6 +70,16 @@ const ExamOff = () => {
   };
 
   const handleSubmit = () => {
+    let unanswered = 0;
+    for (const q of questions) {
+      if (!answers[q.id] && answers[q.id] !== 0)
+        unanswered++;
+    }
+    setUnansweredCount(unanswered);
+    setShowModal(true);
+  };
+
+  const confirmSubmit = () => {
     console.log("제출된 답안:", answers);
     navigate("/examfinish");
   };
@@ -173,6 +187,41 @@ const ExamOff = () => {
             </button>
           </div>
         </div>
+
+        {showModal && (
+          <div className="modal">
+            <div className="modal-box">
+              <h2>시험 제출</h2>
+              <p>정말로 시험을 제출하시겠습니까?</p>
+              {unansweredCount > 0 && (
+                <p>
+                  남은 문제&nbsp;
+                  <strong>
+                    {unansweredCount}/{totalCount}
+                  </strong>
+                </p>
+              )}
+              <div className="delete-buttons">
+                <button
+                  className="submit-btn"
+                  onClick={confirmSubmit}
+                >
+                  제출
+                </button>
+                <button
+                  className="submit-btn"
+                  style={{
+                    backgroundColor: "#ccc",
+                    color: "#333",
+                  }}
+                  onClick={() => setShowModal(false)}
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );
