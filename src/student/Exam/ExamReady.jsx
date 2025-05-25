@@ -12,7 +12,7 @@ const ExamReady = () => {
     id: 1,
     title: "캡스톤디자인 중간고사",
     className: "캡스톤디자인 1분반",
-    testStartTime: "2025-05-25T23:59:59", // 미래 시간
+    testStartTime: "2025-05-27T23:59:59", // 미래 시간
     allowInternet: true,
     duration: 60,
     notice: "부정행위 금지, 시험 시간은 60분입니다.",
@@ -24,6 +24,7 @@ const ExamReady = () => {
     const start = new Date(
       examInfo.testStartTime
     ).getTime();
+    let timer; // ✅ 미리 선언
 
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -35,21 +36,17 @@ const ExamReady = () => {
 
       if (diff <= 0) {
         clearInterval(timer);
-        // ✅ 인터넷 허용 여부에 따라 분기
-        if (examInfo.allowInternet) {
-          navigate(
-            `/student/exam-on?examId=${examInfo.id}`
-          );
-        } else {
-          navigate(
-            `/student/exam-off?examId=${examInfo.id}`
-          );
-        }
+        navigate(
+          examInfo.allowInternet
+            ? `/examon?examId=${examInfo.id}`
+            : `/examoff?examId=${examInfo.id}`
+        );
       }
     };
 
     updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
+    timer = setInterval(updateCountdown, 1000);
+
     return () => clearInterval(timer);
   }, [
     examInfo.testStartTime,
@@ -71,12 +68,15 @@ const ExamReady = () => {
     <MainLayout>
       <div className="exam-ready">
         <div className="exam-ready-box">
+          <h2>{examInfo.className}</h2>
           <h1>{examInfo.title}</h1>
+
           <div className="timer">
             {timeLeft !== null
               ? formatTime(timeLeft)
               : "Loading..."}
           </div>
+
           <div className="notice-box">
             <ul>
               <li>
@@ -89,6 +89,7 @@ const ExamReady = () => {
               </li>
             </ul>
           </div>
+
           <button
             className="start-button"
             onClick={() =>
