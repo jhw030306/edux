@@ -1,50 +1,63 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamTakingLayout.css"; // 기존 공통 스타일 포함
+import axios from "axios";
+import debounce from "lodash.debounce";
 
 const ExamOff = () => {
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const examId = Number(new URLSearchParams(search).get("examId"));
+  const studentId = Number(sessionStorage.getItem("studentId"));
 
   const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});      // { [questionId]: studentAnswer }
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(3600);
+  const [timeLeft, setTimeLeft] = useState(3600);   // seconds
   const [showModal, setShowModal] = useState(false);
-  const [unansweredCount, setUnansweredCount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
 
+
+  // 시간 포맷 함수 (초 → "MM:SS")
+  const formatTime = (sec) => {
+    const m = String(Math.floor(sec / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
+  // 1) 문제 + 저장된 학생 답안 불러오기 & 타이머
   useEffect(() => {
-    const dummyQuestions = [
-      {
-        id: 1,
-        number: 1,
-        type: "multiple",
-        question:
-          "CSS에서 스타일 우선순위가 높은 선택자는?",
-        distractor: [
-          "id 선택자",
-          "클래스 선택자",
-          "태그 선택자",
-          "전체 선택자",
-        ],
-      },
-      {
-        id: 2,
-        number: 2,
-        type: "subjective",
-        question:
-          "JavaScript에서 변수를 선언하는 키워드 3가지는?",
-      },
-    ];
-    setQuestions(dummyQuestions);
-    setTotalCount(dummyQuestions.length);
+    if (!examId || !studentId) {
+      console.warn("⏭ Skipping useEffect: missing examId or studentId");
+      return;
+    }
 
+    // 문제만 
+    axios
+      .get(`/api/exam-questions/exam/${examId}`)
+      .then((res) => setQuestions(res.data.sort((a, b) => a.number - b.number)))
+      .catch((e) => console.error("문제 불러오기 실패:", e));
+
+    // 저장된 학생 답안만
+    axios
+      .get("/api/exam-result/answers", {
+        params: { examId, userId: studentId },
+      })
+      .then((res) => {
+        const init = {};
+        res.data.forEach((item) => {
+          init[item.examQuestionId] = item.userAnswer;
+        });
+        setAnswers(init);
+      })
+      .catch((e) => console.error("답안 불러오기 실패:", e));
+
+    // 타이머 로직
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate("/student/finish");
+          setShowModal(true);
           return 0;
         }
         return prev - 1;
@@ -52,37 +65,51 @@ const ExamOff = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [navigate]);
+  }, [examId, studentId]);
 
-  const formatTime = (seconds) => {
-    const min = String(Math.floor(seconds / 60)).padStart(
-      2,
-      "0"
-    );
-    const sec = String(seconds % 60).padStart(2, "0");
-    return `${min}:${sec}`;
+  // 자동 저장 (debounced)
+  const saveOne = useCallback(
+    debounce((qId, ans) => {
+      axios.post("/api/exam-result/save", {
+        examId,
+        userId: studentId,
+        examQuestionId: qId,
+        userAnswer: ans,
+      }).catch((e) => console.error("Draft 저장 실패:", e));
+    }, 500),
+    [examId, studentId]
+  );
+
+
+  const handleAnswer = (qId, val) => {
+    setAnswers((prev) => {
+      const next = { ...prev, [qId]: val };
+      saveOne(qId, val);
+      return next;
+    });
   };
 
-  const currentQuestion = questions[currentIndex];
-
-  const handleAnswer = (id, value) => {
-    setAnswers((prev) => ({ ...prev, [id]: value }));
+  // 3) 임시 저장 (batch)
+  const handleTempSave = async () => {
+    saveOne.flush();
+    await axios.post("/api/exam-result/save/multiple", {
+      examId,
+      userId: studentId,
+      answers: Object.entries(answers).map(([qid, ans]) => ({
+        examQuestionId: Number(qid),
+        userAnswer: ans,
+      })),
+    });
   };
 
-  const handleSubmit = () => {
-    let unanswered = 0;
-    for (const q of questions) {
-      if (!answers[q.id] && answers[q.id] !== 0)
-        unanswered++;
-    }
-    setUnansweredCount(unanswered);
-    setShowModal(true);
-  };
-
-  const confirmSubmit = () => {
-    console.log("제출된 답안:", answers);
+  // 4) 최종 제출
+  const confirmSubmit = async () => {
+    await handleTempSave();
     navigate("/examfinish");
   };
+
+  const currentQuestion = questions[currentIndex] || {};
+  const unansweredCount = questions.length - Object.keys(answers).length;
 
   return (
     <MainLayout>
@@ -118,16 +145,41 @@ const ExamOff = () => {
                               )
                             }
                           />
-                          {opt}
+                          <strong>{idx + 1}.</strong> {opt}
                         </label>
                       )
                     )}
                   </div>
                 )}
 
+                {/* OX형 */}
+                {currentQuestion.type === "ox" && (
+                  <div className="options">
+                    {["O", "X"].map((opt) => (
+                      <label key={opt}>
+                        <input
+                          type="radio"
+                          name={`q-${currentQuestion.id}`}
+                          checked={
+                            answers[currentQuestion.id] === opt
+                          }
+                          onChange={() =>
+                            handleAnswer(
+                              currentQuestion.id,
+                              opt
+                            )
+                          }
+                        />
+                        {opt}
+                      </label>
+                    ))}
+                  </div>
+                )}
+
                 {/* 주관식 */}
                 {currentQuestion.type === "subjective" && (
                   <textarea
+                    style={{ textAlign: "left" }}
                     value={
                       answers[currentQuestion.id] || ""
                     }
@@ -143,18 +195,15 @@ const ExamOff = () => {
             )}
           </div>
 
-          {/* 우측 패널 (타이머, 버튼, 답안지) */}
+          {/* 우측 패널 (타이머, 버튼, 답안 시트) */}
           <div className="right-panel">
             <div className="timer-box">
               남은 시간: {formatTime(timeLeft)}
             </div>
-            <button className="submit-btn" disabled>
+            <button className="submit-btn" onClick={handleTempSave}>
               임시 저장
             </button>
-            <button
-              className="submit-btn"
-              onClick={handleSubmit}
-            >
+            <button className="submit-btn" onClick={() => setShowModal(true)}>
               제출
             </button>
 
@@ -185,9 +234,9 @@ const ExamOff = () => {
             <p>정말로 시험을 제출하시겠습니까?</p>
             {unansweredCount > 0 && (
               <p>
-                남은 문제&nbsp;
+                미응답 문제:{" "}
                 <strong>
-                  {unansweredCount}/{totalCount}
+                  {unansweredCount}/{questions.length}
                 </strong>
               </p>
             )}

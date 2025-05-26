@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamTakingLayout.css";
 
@@ -13,45 +13,41 @@ const ExamOn = () => {
   const [showModal, setShowModal] = useState(false);
   const [unansweredCount, setUnansweredCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const examId = searchParams.get("examId");
+
 
   useEffect(() => {
-    const dummyQuestions = [
-      {
-        id: 1,
-        number: 1,
-        type: "multiple",
-        question:
-          "CSS에서 스타일 우선순위가 높은 선택자는?",
-        distractor: [
-          "id 선택자",
-          "클래스 선택자",
-          "태그 선택자",
-          "전체 선택자",
-        ],
-      },
-      {
-        id: 2,
-        number: 2,
-        type: "subjective",
-        question: "C++에서 변수를 선언하는 키워드 3가지는?",
-      },
-    ];
-    setQuestions(dummyQuestions);
-    setTotalCount(dummyQuestions.length);
+  const fetchQuestions = async () => {
+    if (!examId) return;
+    try {
+      const res = await fetch(`/api/exam-questions/exam/${examId}`);
+      const data = await res.json();
+      const sorted = data.sort((a, b) => a.number - b.number);
+      setQuestions(sorted);
+      setTotalCount(sorted.length);
+    } catch (err) {
+      console.error("시험 문제 불러오기 실패:", err);
+    }
+  };
 
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          navigate("/student/finish");
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  fetchQuestions();
 
-    return () => clearInterval(timer);
-  }, [navigate]);
+  const timer = setInterval(() => {
+    setTimeLeft((prev) => {
+      if (prev <= 1) {
+        clearInterval(timer);
+        navigate("/examfinish");
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [examId, navigate]);
+
 
   const formatTime = (seconds) => {
     const min = String(Math.floor(seconds / 60)).padStart(
@@ -89,7 +85,7 @@ const ExamOn = () => {
         {/* 인터넷 패널 */}
         <div className="internet-panel">
           <iframe
-            src="https://www.google.com"
+            src="https://example.com"
             title="internet"
             className="internet-iframe"
           />
@@ -112,6 +108,7 @@ const ExamOn = () => {
                   {currentQuestion.number}.{" "}
                   {currentQuestion.question}
                 </h4>
+                {/* 객관식 */}
                 {currentQuestion.type === "multiple" && (
                   <div className="options">
                     {currentQuestion.distractor.map(
@@ -132,14 +129,36 @@ const ExamOn = () => {
                               )
                             }
                           />
-                          {opt}
+                          <strong>{idx + 1}.</strong> {opt}
                         </label>
                       )
                     )}
                   </div>
                 )}
+
+                {/* OX형 */}
+                {currentQuestion.type === "ox" && (
+                  <div className="options">
+                    {["O", "X"].map((opt) => (
+                      <label key={opt}>
+                        <input
+                          type="radio"
+                          name={`q-${currentQuestion.id}`}
+                          checked={answers[currentQuestion.id] === opt}
+                          onChange={() =>
+                            handleAnswer(currentQuestion.id, opt)
+                          }
+                        />
+                        {opt}
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {/* 주관식 */}
                 {currentQuestion.type === "subjective" && (
                   <textarea
+                    style={{ textAlign: "left" }}
                     value={
                       answers[currentQuestion.id] || ""
                     }

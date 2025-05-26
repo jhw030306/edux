@@ -42,12 +42,18 @@ const ExamReady = () => {
       setTimeLeft(diff);
       if (diff <= 0) {
         clearInterval(timer);
+
+        // ↓ 실제 mode 필드 이름에 맞춰 변경
+        const mode = examInfo.mode;           
+        const isDenied = mode === "deny";      //deny면 exmaOff로 나머진 examOn
+
         navigate(
-          examInfo.allowInternet
-            ? `/examon?examId=${examInfo.id}`
-            : `/examoff?examId=${examInfo.id}`
+          isDenied
+            ? `/examoff?examId=${examInfo.id}`
+            : `/examon?examId=${examInfo.id}`
         );
       }
+
     };
     updateCountdown();
     timer = setInterval(updateCountdown, 1000);
@@ -90,13 +96,16 @@ const ExamReady = () => {
 
           <button
             className="start-button"
-            onClick={() =>
+            onClick={() => {
+              const mode = examInfo.mode;           // or examInfo.access.mode
+              const isDenied = mode === "deny";
+
               navigate(
-                examInfo.allowInternet
-                  ? `/examon?examId=${examInfo.id}`
-                  : `/examoff?examId=${examInfo.id}`
-              )
-            }
+                isDenied
+                  ? `/examoff?examId=${examInfo.id}`
+                  : `/examon?examId=${examInfo.id}`
+              );
+            }}
           >
             시험 응시
           </button>
