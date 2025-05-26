@@ -1,83 +1,155 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamTakingLayout.css";
+import axios from "axios";
+import debounce from "lodash.debounce"
 
 const ExamOn = () => {
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const examId = Number(new URLSearchParams(search).get("examId"));
+  const studentId = Number(sessionStorage.getItem("studentId"));
 
   const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers]     = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(3600);
+  const [timeLeft, setTimeLeft]   = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [unansweredCount, setUnansweredCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const examId = searchParams.get("examId");
 
+// 시간 포맷 (초 → MM:SS)
+  const formatTime = (sec) => {
+    if (sec == null) return "--:--";
+    const m = String(Math.floor(sec / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  };
 
   useEffect(() => {
-  const fetchQuestions = async () => {
-    if (!examId) return;
-    try {
-      const res = await fetch(`/api/exam-questions/exam/${examId}`);
-      const data = await res.json();
-      const sorted = data.sort((a, b) => a.number - b.number);
-      setQuestions(sorted);
-      setTotalCount(sorted.length);
-    } catch (err) {
-      console.error("시험 문제 불러오기 실패:", err);
-    }
-  };
+    if (!examId || !studentId) return;
 
-  fetchQuestions();
+    // 1) 제한시간
+    axios
+      .get(`/api/exams/${examId}`)
+      .then(res => {
+        const durMin = res.data.duration ?? 60;
+        setTimeLeft(durMin * 60);
+      })
+      .catch(err => console.error("제한 시간 로드 실패:", err));
 
-  const timer = setInterval(() => {
-    setTimeLeft((prev) => {
-      if (prev <= 1) {
-        clearInterval(timer);
-        navigate("/examfinish");
-        return 0;
+    // 2) 문제
+    axios.get(`/api/exam-questions/exam/${examId}`)
+      .then(res => {
+        const sorted = res.data.sort((a, b) => a.number - b.number);
+        setQuestions(sorted);
+        setTotalCount(sorted.length);  // 여기서 전체 개수를 세팅
+      })
+      .catch(err => console.error("문제 로드 실패:", err));
+
+    // 3) 저장된 답안
+    axios
+      .get("/api/exam-result/answers", {
+        params: { examId, userId: studentId }
+      })
+      .then(res => {
+        const init = {};
+        res.data.forEach(item => {
+          const ua = item.userAnswer;
+          // 주관식 빈 문자열은 무응답으로 처리
+          if (typeof ua === "string" && ua.trim() === "") return;
+          // 객관식 숫자형 문자열은 Number로
+          init[item.examQuestionId] =
+            /^[0-9]+$/.test(ua) ? Number(ua) : ua;
+        });
+        setAnswers(init);
+      })
+      .catch(err => console.error("답안 로드 실패:", err));
+  }, [examId, studentId]);
+
+
+  // ────────────────────────────────────────────────────────
+  // B) 타이머: timeLeft 세팅되면 1초마다 감소
+  // ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (timeLeft == null) return;
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setShowModal(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+
+  // 자동 저장 (debounce)
+  const saveOne = useCallback(
+    debounce((qId, ans) => {
+      axios
+        .post("/api/exam-result/save", {
+          examId,
+          userId: studentId,
+          examQuestionId: qId,
+          userAnswer: ans,
+        })
+        .catch(e => console.error("Draft 저장 실패:", e));
+    }, 500),
+    [examId, studentId]
+  );
+
+
+  // 답안 선택/입력 처리
+  const handleAnswer = (qId, val) => {
+    setAnswers(prev => {
+      const next = { ...prev };
+      // 주관식 빈 문자열이면 삭제 → 무응답 처리
+      if (typeof val === "string" && val.trim() === "") {
+        delete next[qId];
+      } else {
+        next[qId] = val;
       }
-      return prev - 1;
+      saveOne(qId, val);
+      return next;
     });
-  }, 1000);
-
-  return () => clearInterval(timer);
-}, [examId, navigate]);
-
-
-  const formatTime = (seconds) => {
-    const min = String(Math.floor(seconds / 60)).padStart(
-      2,
-      "0"
-    );
-    const sec = String(seconds % 60).padStart(2, "0");
-    return `${min}:${sec}`;
   };
 
-  const currentQuestion = questions[currentIndex];
 
-  const handleAnswer = (id, value) => {
-    setAnswers((prev) => ({ ...prev, [id]: value }));
+  // 임시 저장 (batch)
+  const handleTempSave = async () => {
+    saveOne.flush();
+    const payload = {
+      examId,
+      userId: studentId,
+      answers: Object.entries(answers)
+        .map(([qid, ans]) => ({
+          examQuestionId: qid.toString(),
+          userAnswer: ans.toString(),
+        }))
+        .filter(a => a.userAnswer !== "")
+    };
+    await axios.post("/api/exam-result/save/multiple", payload);
   };
 
-  const handleSubmit = () => {
-    let unanswered = 0;
-    for (const q of questions) {
-      if (!answers[q.id] && answers[q.id] !== 0)
-        unanswered++;
-    }
-    setUnansweredCount(unanswered);
-    setShowModal(true);
-  };
 
-  const confirmSubmit = () => {
-    console.log("제출된 답안:", answers);
+  // 최종 제출
+  const confirmSubmit = async () => {
+    await handleTempSave();
     navigate("/examfinish");
   };
+
+
+  // 미응답 개수 계산
+  const unansweredCount = questions.reduce((cnt, q) => {
+    return answers[q.id] === undefined ? cnt + 1 : cnt;
+  }, 0);
+
+   // 현재 문제
+  const currentQuestion = questions[currentIndex] || {};
 
   return (
     <MainLayout>
@@ -85,7 +157,7 @@ const ExamOn = () => {
         {/* 인터넷 패널 */}
         <div className="internet-panel">
           <iframe
-            src="https://example.com"
+            src="https://google.com"
             title="internet"
             className="internet-iframe"
           />
@@ -97,8 +169,12 @@ const ExamOn = () => {
             <div className="timer-box">
               남은 시간: {formatTime(timeLeft)}
             </div>
-            <button disabled>임시 저장</button>
-            <button onClick={handleSubmit}>제출</button>
+            <button className="submit-btn" 
+            onClick={handleTempSave}>
+              임시 저장</button>
+             <button className="submit-btn" 
+             onClick={() => setShowModal(true)}>
+              제출</button>
           </div>
 
           <div className="question-box">
@@ -108,6 +184,7 @@ const ExamOn = () => {
                   {currentQuestion.number}.{" "}
                   {currentQuestion.question}
                 </h4>
+
                 {/* 객관식 */}
                 {currentQuestion.type === "multiple" && (
                   <div className="options">
