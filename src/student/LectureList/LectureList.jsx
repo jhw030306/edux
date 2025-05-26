@@ -7,19 +7,13 @@ import "./LectureList.css";
 export const StuLecturepage = () => {
   const navigate = useNavigate();
 
-  // 로그인 상태에 따라 분기
-   const goToHome = () => {
-    // 이미 /prolecturelist 페이지라면 브라우저 새로고침
-    if (window.location.pathname === "/prolecturelist") {
-      window.location.reload();
-      return;
-    }
-    // 아니면 SPA 네비게이트
-    if (professorId) {
-      navigate("/prolecturelist");
+  const goToHome = () => {
+    // 현재 "/"가 아니면 메인으로, 메인이면 새로고침
+     if (window.location.pathname === "/stulecturelist") {
+       window.location.reload();
     } else {
-      navigate("/main");
-    }
+       navigate("/main");
+     }
   };
 
   const goToLecture = (lecture) => {
