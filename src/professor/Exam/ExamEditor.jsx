@@ -56,7 +56,7 @@ const ExamEditor = () => {
             date: toDate(data.testStartTime),
             startTime: toTime(data.testStartTime),
             endTime: toTime(data.testEndTime),
-            duration: prev.settings.duration,
+            duration: data.duration,
             useSameScore: prev.settings.useSameScore,
             scorePerQuestion:
               prev.settings.scorePerQuestion,
@@ -192,6 +192,7 @@ const ExamEditor = () => {
           testStartTime: `${examData.settings.date}T${examData.settings.startTime}`,
           testEndTime: `${examData.settings.date}T${examData.settings.endTime}`,
           notice: examData.notice,
+          duration: examData.settings.duration, 
         }),
       });
 

@@ -14,7 +14,9 @@ const ExamOff = () => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});      // { [questionId]: studentAnswer }
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(3600);   // seconds
+
+  //초기값 null로 두고 서버에서 받아온 duration으로 다시 세팅
+  const [timeLeft, setTimeLeft] = useState(null); 
   const [showModal, setShowModal] = useState(false);
 
 
@@ -27,10 +29,16 @@ const ExamOff = () => {
 
   // 1) 문제 + 저장된 학생 답안 불러오기 & 타이머
   useEffect(() => {
-    if (!examId || !studentId) {
-      console.warn("⏭ Skipping useEffect: missing examId or studentId");
-      return;
-    }
+    if (!examId || !studentId) return;
+    
+    // 시험 제한 시간(duration) 불러오기
+    axios
+      .get(`/api/exams/${examId}`)
+      .then((res) => {
+        const durMin = res.data.duration ?? 60;       // 서버에서 내려온 분 단위
+        setTimeLeft(durMin * 60);                     // 초 단위로 변환
+      })
+      .catch((e) => console.error("제한 시간 불러오기 실패:", e));
 
     // 문제만 
     axios
@@ -40,32 +48,42 @@ const ExamOff = () => {
 
     // 저장된 학생 답안만
     axios
-      .get("/api/exam-result/answers", {
-        params: { examId, userId: studentId },
-      })
-      .then((res) => {
-        const init = {};
-        res.data.forEach((item) => {
-          init[item.examQuestionId] = item.userAnswer;
-        });
-        setAnswers(init);
-      })
-      .catch((e) => console.error("답안 불러오기 실패:", e));
-
-    // 타이머 로직
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setShowModal(true);
-          return 0;
+    .get("/api/exam-result/answers", { params: { examId, userId: studentId } })
+    .then((res) => {
+      const init = {};
+      res.data.forEach((item) => {
+        const ua = item.userAnswer;
+        // 주관식(userAnswer가 빈 문자열)이면 무응답 처리
+        if (typeof ua === "string" && ua.trim() === "") {
+          return;
         }
-        return prev - 1;
+        // 객관식 숫자는 Number로 변환
+        init[item.examQuestionId] =
+          /^[0-9]+$/.test(ua) ? Number(ua) : ua;
       });
-    }, 1000);
+      setAnswers(init);
+    })
+      .catch((e) => console.error("답안 불러오기 실패:", e));
+      }, [examId, studentId]);
 
-    return () => clearInterval(timer);
-  }, [examId, studentId]);
+    
+//  타이머 전용: timeLeft가 null이 아니면 1초마다 감소
+useEffect(() => {
+  if (timeLeft === null) return;
+
+  const timer = setInterval(() => {
+    setTimeLeft((prev) => {
+      if (prev <= 1) {
+        clearInterval(timer);
+        setShowModal(true);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [timeLeft]);
 
   // 자동 저장 (debounced)
   const saveOne = useCallback(
@@ -82,25 +100,33 @@ const ExamOff = () => {
 
 
   const handleAnswer = (qId, val) => {
-    setAnswers((prev) => {
-      const next = { ...prev, [qId]: val };
-      saveOne(qId, val);
-      return next;
-    });
-  };
-
+   setAnswers((prev) => {
+     const next = { ...prev };
+     // 주관식 textarea 가 비워지면 무응답 처리
+     if (typeof val === "string" && val.trim() === "") {
+       delete next[qId];
+     } else {
+       next[qId] = val;
+     }
+     saveOne(qId, val);
+     return next;
+   });
+ };
   // 3) 임시 저장 (batch)
   const handleTempSave = async () => {
     saveOne.flush();
-    await axios.post("/api/exam-result/save/multiple", {
-      examId,
-      userId: studentId,
-      answers: Object.entries(answers).map(([qid, ans]) => ({
-        examQuestionId: Number(qid),
-        userAnswer: ans,
-      })),
-    });
-  };
+    const payload = {
+   examId,
+   userId: studentId,
+   answers: Object.entries(answers)
+     .map(([qid, ans]) => ({
+       examQuestionId: qid.toString(),     // String 타입으로
+       userAnswer: ans.toString(),         // String 타입으로
+     }))
+     .filter(a => a.userAnswer !== ""),     // 빈 답안은 보내지 않아도 좋습니다
+ };
+ await axios.post("/api/exam-result/save/multiple", payload);
+};
 
   // 4) 최종 제출
   const confirmSubmit = async () => {
@@ -109,7 +135,12 @@ const ExamOff = () => {
   };
 
   const currentQuestion = questions[currentIndex] || {};
-  const unansweredCount = questions.length - Object.keys(answers).length;
+  const unansweredCount = questions.reduce((cnt, q) => {
+   const a = answers[q.id];
+   // 숫자(0)이나 "O"/"X"도 valid, 빈 문자열·undefined만 무응답
+   if (a === undefined) return cnt + 1;
+   return cnt;
+ }, 0);
 
   return (
     <MainLayout>
@@ -214,7 +245,7 @@ const ExamOff = () => {
                   className={`num-btn ${
                     idx === currentIndex ? "active" : ""
                   } ${
-                    answers[q.id] != null ? "answered" : ""
+                    answers[q.id] !== undefined ? "answered" : ""
                   }`}
                   onClick={() => setCurrentIndex(idx)}
                 >
