@@ -66,3 +66,33 @@
 .start-button:hover {
   background-color: #2c3e50;
 }
+
+.exam-on-layout .top-controls,
+.exam-off-layout .top-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;       /* 우측으로 붙이기 */
+}
+
+/* 타이머 박스 고정 높이 & 최소 너비 */
+.exam-on-layout .timer-box,
+.exam-off-layout .timer-box {
+  min-width: 140px;        /* 가로 여유 */
+  height: 48px;            /* 버튼과 같은 높이 */
+  line-height: 48px;       /* 텍스트 세로 가운데 정렬 */
+  text-align: center;
+  font-size: 16px;         /* 필요에 따라 조정 */
+  padding: 0 12px;         /* 좌우 여백 */
+}
+
+/* 임시저장/제출 버튼 공통 스타일 */
+.exam-on-layout .top-controls .submit-btn,
+.exam-off-layout .top-controls .submit-btn {
+  height: 48px;            /* 타이머 박스와 동일 */
+  line-height: 48px;
+  padding: 0 20px;         /* 좌우 여백 */
+  font-size: 14px;         /* 글자 크기 */
+  width: auto;        /* 부모에 꽉 차는 걸 막고 내용에 맞춰 늘어나게 */
+  white-space: nowrap;/* 텍스트 줄바꿈 방지 */
+}

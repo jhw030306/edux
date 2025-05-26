@@ -1,68 +1,72 @@
 // src/student/Exam/ExamReady.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamReady.css";
 
 const ExamReady = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const examId = searchParams.get("examId");
 
-  // ✅ 하드코딩된 시험 정보 (API 없이 테스트용)
-  const examInfo = {
-    id: 1,
-    title: "캡스톤디자인 중간고사",
-    className: "캡스톤디자인 1분반",
-    testStartTime: "2025-05-27T23:59:59", // 미래 시간
-    allowInternet: true,
-    duration: 60,
-    notice: "부정행위 금지, 시험 시간은 60분입니다.",
-  };
-
+  const [examInfo, setExamInfo] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
 
   useEffect(() => {
-    const start = new Date(
-      examInfo.testStartTime
-    ).getTime();
-    let timer; // ✅ 미리 선언
+    if (!examId) return;
+    const fetchExamInfo = async () => {
+      try {
+        const res = await fetch(`/api/exams/${examId}`);
+        if (!res.ok) throw new Error("시험 정보 불러오기 실패");
+        const data = await res.json();
+        setExamInfo(data);
+        console.log("📦 examInfo 응답:", data);
 
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const diff = Math.max(
-        0,
-        Math.floor((start - now) / 1000)
-      );
-      setTimeLeft(diff);
-
-      if (diff <= 0) {
-        clearInterval(timer);
-        navigate(
-          examInfo.allowInternet
-            ? `/examon?examId=${examInfo.id}`
-            : `/examoff?examId=${examInfo.id}`
-        );
+      } catch (err) {
+        console.error(err);
+        alert("시험 정보를 불러오는 데 실패했습니다.");
       }
     };
+    fetchExamInfo();
+  }, [examId]);
 
+  useEffect(() => {
+    if (!examInfo) return;
+
+    const start = new Date(examInfo.testStartTime).getTime();
+    let timer;
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const diff = Math.max(0, Math.floor((start - now) / 1000));
+      setTimeLeft(diff);
+      if (diff <= 0) {
+        clearInterval(timer);
+
+        // ↓ 실제 mode 필드 이름에 맞춰 변경
+        const mode = examInfo.mode;           
+        const isDenied = mode === "deny";      //deny면 exmaOff로 나머진 examOn
+
+        navigate(
+          isDenied
+            ? `/examoff?examId=${examInfo.id}`
+            : `/examon?examId=${examInfo.id}`
+        );
+      }
+
+    };
     updateCountdown();
     timer = setInterval(updateCountdown, 1000);
-
     return () => clearInterval(timer);
-  }, [
-    examInfo.testStartTime,
-    examInfo.id,
-    examInfo.allowInternet,
-    navigate,
-  ]);
+  }, [examInfo]);
 
   const formatTime = (seconds) => {
-    const min = String(Math.floor(seconds / 60)).padStart(
-      2,
-      "0"
-    );
+    const min = String(Math.floor(seconds / 60)).padStart(2, "0");
     const sec = String(seconds % 60).padStart(2, "0");
     return `${min} : ${sec}`;
   };
+
+  if (!examInfo) return <MainLayout>Loading...</MainLayout>;
 
   return (
     <MainLayout>
@@ -92,13 +96,16 @@ const ExamReady = () => {
 
           <button
             className="start-button"
-            onClick={() =>
+            onClick={() => {
+              const mode = examInfo.mode;           // or examInfo.access.mode
+              const isDenied = mode === "deny";
+
               navigate(
-                examInfo.allowInternet
-                  ? `/examon?examId=${examInfo.id}`
-                  : `/examoff?examId=${examInfo.id}`
-              )
-            }
+                isDenied
+                  ? `/examoff?examId=${examInfo.id}`
+                  : `/examon?examId=${examInfo.id}`
+              );
+            }}
           >
             시험 응시
           </button>
