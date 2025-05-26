@@ -37,7 +37,7 @@ export const StuLecture = () => {
       "selectedExam",
       JSON.stringify(exam)
     );
-    navigate("/examready");
+    navigate(`/examready?examId=${exam.id}`);
   };
 
   return (
