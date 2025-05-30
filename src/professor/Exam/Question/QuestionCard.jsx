@@ -48,7 +48,7 @@ const QuestionCard = ({
   };
 
   const toggleAnswer = (i) => {
-    onUpdate({ ...data, answer: i });
+    onUpdate({ ...data, answer: [i] });
   };
 
   const autoResize = () => {
@@ -100,7 +100,7 @@ const QuestionCard = ({
                 <input
                   type="radio"
                   name={`single-${data.id}`}
-                  checked={data.answer === i}
+                  checked={Array.isArray(data.answer) && data.answer.includes(i)}
                   onChange={() => toggleAnswer(i)}
                 />
               </label>
