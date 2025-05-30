@@ -3,22 +3,40 @@ import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import { ExamDelete } from "./ExamDelete";
-import { useEffect } from "react"; 
+import { useEffect } from "react";
 import "./Lecture.css";
-
-
 
 export const ProLecture = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const goToExam = (exam) => {
     sessionStorage.setItem(
-      "selectedExam", 
-      JSON.stringify(exam));
+      "selectedExam",
+      JSON.stringify(exam)
+    );
     navigate("/exameditor", {
       state: { exam },
-    })
+    });
   };
+  const goToProctor = (exam) => {
+    sessionStorage.setItem(
+      "selectedExam",
+      JSON.stringify(exam)
+    );
+    navigate("/proctoring", {
+      state: { exam },
+    });
+  };
+  const goToGrading = (exam) => {
+    sessionStorage.setItem(
+      "selectedExam",
+      JSON.stringify(exam)
+    );
+    navigate("/grading", {
+      state: { exam },
+    });
+  };
+
   const _lecture = location.state?.lecture;
 
   const [exams, setExams] = useState([]);
@@ -31,16 +49,28 @@ export const ProLecture = () => {
 
   // ✅ 강의 정보 저장 + 시험 목록 로드
   useEffect(() => {
-     console.log("📌 useEffect 실행됨", _lecture);
+    console.log("📌 useEffect 실행됨", _lecture);
     const fetchExams = async () => {
-      const professorId = sessionStorage.getItem("professorId");
+      const professorId =
+        sessionStorage.getItem("professorId");
       const classroomId = _lecture?.id;
-      console.log("교수ID:", professorId, "강의실ID:", classroomId);
-      console.log("불러오기 URL:", `/api/exams/${professorId}/${classroomId}/list`);
+      console.log(
+        "교수ID:",
+        professorId,
+        "강의실ID:",
+        classroomId
+      );
+      console.log(
+        "불러오기 URL:",
+        `/api/exams/${professorId}/${classroomId}/list`
+      );
 
       try {
-        const res = await fetch(`/api/exams/${professorId}/${classroomId}/list`);
-        if (!res.ok) throw new Error("시험 목록 불러오기 실패");
+        const res = await fetch(
+          `/api/exams/${professorId}/${classroomId}/list`
+        );
+        if (!res.ok)
+          throw new Error("시험 목록 불러오기 실패");
         const data = await res.json();
         setExams(data);
       } catch (err) {
@@ -49,14 +79,18 @@ export const ProLecture = () => {
     };
 
     if (_lecture) {
-      sessionStorage.setItem("selectedLecture", JSON.stringify(_lecture));
+      sessionStorage.setItem(
+        "selectedLecture",
+        JSON.stringify(_lecture)
+      );
       fetchExams();
     }
   }, [_lecture]);
 
   // ✅ 시험 추가 (API 연동)
   const handleAddExam = async () => {
-    const professorId = sessionStorage.getItem("professorId");
+    const professorId =
+      sessionStorage.getItem("professorId");
     const classroomId = _lecture?.id;
 
     try {
@@ -88,40 +122,42 @@ export const ProLecture = () => {
 
   // ✅ 이름 확정 시 API로 업데이트
   const handleNameConfirm = async () => {
-  const newName = tempName.trim();
-  if (newName === "") return;
+    const newName = tempName.trim();
+    if (newName === "") return;
 
-  const exam = exams[editingIndex];
-  console.log("수정 요청 데이터:", { id: exam.id, title: newName });
-
-  try {
-    const res = await fetch("/api/exams/update", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: exam.id,
-        title: newName,
-      }),
+    const exam = exams[editingIndex];
+    console.log("수정 요청 데이터:", {
+      id: exam.id,
+      title: newName,
     });
 
-    console.log("응답 상태:", res.status);
-    const result = await res.text();
-    console.log("응답 결과:", result);
+    try {
+      const res = await fetch("/api/exams/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: exam.id,
+          title: newName,
+        }),
+      });
 
-    if (!res.ok) throw new Error("시험 수정 실패");
+      console.log("응답 상태:", res.status);
+      const result = await res.text();
+      console.log("응답 결과:", result);
 
-    const updated = [...exams];
-    updated[editingIndex].title = newName;
-    setExams(updated);
-    setEditingIndex(null);
-    setTempName("");
-  } catch (err) {
-    console.error("시험 수정 실패:", err);
-  }
-};
+      if (!res.ok) throw new Error("시험 수정 실패");
 
+      const updated = [...exams];
+      updated[editingIndex].title = newName;
+      setExams(updated);
+      setEditingIndex(null);
+      setTempName("");
+    } catch (err) {
+      console.error("시험 수정 실패:", err);
+    }
+  };
 
   const handleDeleteClick = (idx) => {
     setExamToDelete({ idx, name: exams[idx].name });
@@ -138,37 +174,40 @@ export const ProLecture = () => {
 
   //시험 삭제
   const handleConfirmDelete = async () => {
-  const deletedExam = exams[examToDelete.idx];
+    const deletedExam = exams[examToDelete.idx];
 
-  try {
-    // 1) 서버에 삭제 요청
-    const response = await fetch(`/api/exams/delete/all/${deletedExam.id}`, {
-      method: "DELETE",
-    });
+    try {
+      // 1) 서버에 삭제 요청
+      const response = await fetch(
+        `/api/exams/delete/all/${deletedExam.id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`삭제 실패: ${errorText}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`삭제 실패: ${errorText}`);
+      }
+
+      // 2) 프론트에서 상태 제거
+      const updated = exams.filter(
+        (_, i) => i !== examToDelete.idx
+      );
+      setExams(updated);
+
+      // 3) 모달 닫기
+      setShowDeleteModal(false);
+      alert("시험 삭제 완료");
+    } catch (error) {
+      console.error("시험 삭제 오류:", error);
+      alert("시험 삭제 중 오류 발생: " + error.message);
     }
-
-    // 2) 프론트에서 상태 제거
-    const updated = exams.filter((_, i) => i !== examToDelete.idx);
-    setExams(updated);
-
-    // 3) 모달 닫기
-    setShowDeleteModal(false);
-    alert("시험 삭제 완료");
-  } catch (error) {
-    console.error("시험 삭제 오류:", error);
-    alert("시험 삭제 중 오류 발생: " + error.message);
-  }
-};
+  };
 
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
   };
-
-
 
   return (
     <MainLayout>
@@ -177,7 +216,10 @@ export const ProLecture = () => {
         <div className="section-box">
           <div className="section-title">학생</div>
           <div className="section-actions">
-            <button className="action-button">
+            <button
+              className="action-button"
+              onClick={() => navigate("/studentlist")}
+            >
               학생 관리
             </button>
             <button className="action-button">
@@ -229,7 +271,17 @@ export const ProLecture = () => {
               >
                 시험 입력
               </button>
-              <button className="action-button">
+              <button
+                className="action-button"
+                onClick={() => goToProctor(exam)}
+              >
+                시험 감독
+              </button>
+
+              <button
+                className="action-button"
+                onClick={() => goToGrading("/grading")}
+              >
                 시험 채점
               </button>
             </div>

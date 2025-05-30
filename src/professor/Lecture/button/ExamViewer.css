@@ -1,0 +1,86 @@
+.exam-wrapper {
+  background: #f4f6f9;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.exam-panels {
+  display: flex;
+  max-width: 960px;
+  width: 100%;
+  gap: 24px;
+  padding: 0 24px;
+}
+
+.left-panel {
+  flex: 1;
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.question-box {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #fff;
+}
+
+.question-box h4 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.options label {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  gap: 10px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f8f8f8;
+  resize: none;
+}
+
+.answer-sheet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding-top: 16px;
+}
+
+.num-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #aaa;
+  background: #eee;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.num-btn.active {
+  background: #1a2a3a;
+  color: white;
+}
