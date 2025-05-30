@@ -14,7 +14,7 @@ const ExamFinish = () => {
           <h1>시험이 제출되었습니다!</h1>
           <p>수고하셨습니다.</p>
 
-          <button onClick={() => navigate("/stulecture")}>
+          <button onClick={() => navigate("/stulecturelist")}>
             나가기
           </button>
         </div>
