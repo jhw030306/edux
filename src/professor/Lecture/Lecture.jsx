@@ -93,6 +93,11 @@ export const ProLecture = () => {
       sessionStorage.getItem("professorId");
     const classroomId = _lecture?.id;
 
+      if (!professorId || !classroomId) {
+        alert("교수 ID 또는 강의실 정보가 없습니다.");
+        return;
+  }
+
     try {
       const res = await fetch(`/api/exams/create`, {
         method: "POST",
@@ -101,6 +106,7 @@ export const ProLecture = () => {
           professorId,
           classroomId,
           title: "", // 처음엔 빈 제목
+          duration: 60 //기본값
         }),
       });
 

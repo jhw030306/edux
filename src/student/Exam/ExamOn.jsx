@@ -10,6 +10,8 @@ const ExamOn = () => {
   const { search } = useLocation();
   const examId = Number(new URLSearchParams(search).get("examId"));
   const studentId = Number(sessionStorage.getItem("studentId"));
+  const studentLoginId = sessionStorage.getItem("studentLoginId");
+  const location = useLocation();
 
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers]     = useState({});
@@ -27,16 +29,35 @@ const ExamOn = () => {
   };
 
   useEffect(() => {
+  const script = document.createElement("script");
+  script.src = "";
+  script.async = true;
+  document.body.appendChild(script);
+
+  // 검색창이 다시 렌더링 되도록 기존 내용 제거 (없어도 되긴 함)
+  return () => {
+    document.body.removeChild(script);
+  };
+}, []);
+
+
+  useEffect(() => {
     if (!examId || !studentId) return;
 
     // 1) 제한시간
-    axios
-      .get(`/api/exams/${examId}`)
+    // 남은 시간 API 호출
+    axios.get("/api/logs/remaining-time", {
+      params: {
+        studentId,
+        examInfoId: examId
+      }
+    })
       .then(res => {
-        const durMin = res.data.duration ?? 60;
-        setTimeLeft(durMin * 60);
+        setTimeLeft(res.data); // 초 단위로 받아옴
+        console.log("🕒 남은 시간 설정됨:", res.data);
       })
-      .catch(err => console.error("제한 시간 로드 실패:", err));
+      .catch(err => console.error("남은 시간 가져오기 실패:", err));
+
 
     // 2) 문제
     axios.get(`/api/exam-questions/exam/${examId}`)
@@ -86,6 +107,45 @@ const ExamOn = () => {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+  useEffect(() => {
+    const handleExit = () => {
+      const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
+      const studentId = sessionStorage.getItem("studentLoginId");
+
+      if (!studentId || !classroomId || !examId) return; // 데이터 없을 때 방지
+
+      const payload = {
+        studentId: studentId.toString(),
+        timestamp: new Date().toISOString().slice(0, 19),
+        classroomId: classroomId.toString(),
+        examId: examId.toString(),
+      };
+
+      const blob = new Blob([JSON.stringify(payload)], {
+        type: "application/json",
+      });
+
+      console.log("📤 EXAM_EXIT 로그 전송 (페이지 이탈)");
+      navigator.sendBeacon("/api/logs/exit-exam", blob);
+    };
+
+    window.addEventListener("beforeunload", handleExit);
+    window.addEventListener("popstate", handleExit);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleExit);
+      window.removeEventListener("popstate", handleExit);
+    };
+  }, []); // ✅ 의존성 제거해서 컴포넌트 마운트 시 한 번만 실행
+
+  const goToAnotherPage = () => {
+    logExamExit();  // 직접 로그 함수 호출
+    navigate("/somewhere");
+  };
+
+
+
+
 
   // 자동 저장 (debounce)
   const saveOne = useCallback(
@@ -101,6 +161,30 @@ const ExamOn = () => {
     }, 500),
     [examId, studentId]
   );
+
+  //시험 제출 및 저장시 로그 기록
+  const logExamAction = async (type) => {
+    const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
+    
+    const url =
+      type === "TEMP"
+        ? "/api/logs/temporary-storage"
+        : "/api/logs/submit-exam";
+
+    try {
+      await axios.post(url, {
+        studentId: studentLoginId.toString(), // ✅ 문자열로 변환
+        timestamp: new Date().toISOString().slice(0, 19),
+        classroomId: classroomId.toString(), // ✅ 꼭 문자열
+        examId: examId.toString()
+      });
+
+      console.log(`[LOG] ${type === "TEMP" ? "임시 저장" : "시험 제출"} 로그 전송 완료`);
+    } catch (err) {
+      console.error(`[LOG] ${type === "TEMP" ? "임시 저장" : "시험 제출"} 로그 실패`, err);
+    }
+  };
+
 
 
   // 답안 선택/입력 처리
@@ -133,12 +217,14 @@ const ExamOn = () => {
         .filter(a => a.userAnswer !== "")
     };
     await axios.post("/api/exam-result/save/multiple", payload);
+    await logExamAction("TEMP"); // ✅ 임시 저장 로그 남기기
   };
 
 
   // 최종 제출
   const confirmSubmit = async () => {
     await handleTempSave();
+    await logExamAction("SUBMIT"); // ✅ 제출 로그 남기기
     navigate("/examfinish");
   };
 
@@ -156,11 +242,8 @@ const ExamOn = () => {
       <div className="exam-wrapper exam-on-layout">
         {/* 인터넷 패널 */}
         <div className="internet-panel">
-          <iframe
-            src="https://google.com"
-            title="internet"
-            className="internet-iframe"
-          />
+
+          <div className="gcse-search"></div>
         </div>
 
         {/* 시험 영역 */}
