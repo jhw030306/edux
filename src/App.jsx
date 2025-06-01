@@ -15,6 +15,10 @@ import ExamReady from "./student/Exam/ExamReady";
 import ExamOff from "./student/Exam/ExamOff";
 import ExamOn from "./student/Exam/ExamOn";
 import ExamFinish from "./student/Exam/ExamFinish";
+import { ProctoringPage } from "./professor/Lecture/button/ProctoringPage";
+import { StudentList } from "./professor/Lecture/button/StudentList";
+import Grading from "./professor/Grading/Grading";
+import GradingStudent from "./professor/Grading/GradingStudent";
 
 function App() {
   return (
@@ -48,6 +52,19 @@ function App() {
       <Route path="/examoff" element={<ExamOff />} />
       <Route path="/examon" element={<ExamOn />} />
       <Route path="/examfinish" element={<ExamFinish />} />
+      <Route
+        path="/studentlist"
+        element={<StudentList />}
+      />
+      <Route
+        path="/proctoring"
+        element={<ProctoringPage />}
+      />
+      <Route path="/grading" element={<Grading />} />
+      <Route
+        path="/gradingstudent"
+        element={<GradingStudent />}
+      />
     </Routes>
   );
 }

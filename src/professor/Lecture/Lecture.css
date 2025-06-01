@@ -122,3 +122,40 @@
   margin-top: 8px;
   display: block;
 }
+
+.student-search {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 16px auto;
+  padding: 10px 16px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  display: block;
+  box-sizing: border-box;
+}
+
+.student-table {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.student-table th,
+.student-table td {
+  padding: 12px 16px;
+  border: 1px solid #d6dce5;
+  text-align: center;
+}
+
+.student-table th {
+  background-color: #f0f4f8;
+  font-weight: bold;
+}
+
+.student-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
