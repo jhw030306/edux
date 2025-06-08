@@ -59,25 +59,20 @@ export const Loginpage = () => {
       alert("로그인 성공!");
 
       if (userType === "professor") {
-        sessionStorage.setItem(
-          "professorId",
-          response.data.id
-        );
+        sessionStorage.setItem("professorId", response.data.id);
         navigate("/prolecturelist");
       } else {
-        sessionStorage.setItem(
-          "studentId",
-          response.data.id
-        );
-        sessionStorage.setItem(
-          "studentLoginId",
-          response.data.studentId
-        );
+        sessionStorage.setItem("studentId", response.data.id);
+        sessionStorage.setItem("studentLoginId", response.data.studentId);
         navigate("/stulecturelist");
       }
     } catch (error) {
       console.error("로그인 실패", error);
-      alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+      if (error.response && error.response.data?.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("알 수 없는 오류가 발생했습니다.");
+      }
     }
   };
 

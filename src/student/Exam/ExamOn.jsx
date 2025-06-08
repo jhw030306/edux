@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback,useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamTakingLayout.css";
@@ -19,6 +19,126 @@ const ExamOn = () => {
   const [timeLeft, setTimeLeft]   = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
+  const [forbiddenKeys, setForbiddenKeys] = useState([]);
+  const [showFocusAlert, setShowFocusAlert] = useState(false);
+  const [showKeyAlert, setShowKeyAlert] = useState(false);
+  const [keyAlertMessage, setKeyAlertMessage] = useState("");
+  const alreadyHandledRef = useRef(false);
+
+
+    // 최초 한 번만 JSON 파일에서 키 목록 불러오기
+    useEffect(() => {
+      fetch("/forbiddenKeys.json")
+        .then((res) => res.json())
+        .then((data) => {
+          setForbiddenKeys(data);
+          console.log("📥 금지 키 불러옴:", data);
+        })
+        .catch((err) => {
+          console.error("금지 키 불러오기 실패:", err);
+        });
+    }, []);
+
+
+  //금지키
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const keyCombo = [];
+      if (e.ctrlKey) keyCombo.push("Control");
+      if (e.shiftKey) keyCombo.push("Shift");
+      if (e.altKey) keyCombo.push("Alt");
+      keyCombo.push(e.key);
+      const comboString = keyCombo.join("+");
+
+      const matched = forbiddenKeys.find(
+        (f) => f.key === e.key || f.key === comboString
+      );
+
+      if (matched) {
+        e.preventDefault();
+        setKeyAlertMessage(`금지된 키 입력입니다: ${matched.label}`);
+        setShowKeyAlert(true);
+        sendCheatLog(`금지 키 입력: ${matched.key}`);
+      }
+
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [forbiddenKeys, examId, studentLoginId]);
+
+
+  //창 전환 감지
+  useEffect(() => {
+    const handleBlur = () => {
+      if (alreadyHandledRef.current) return;
+      alreadyHandledRef.current = true;
+
+      setShowFocusAlert(true);
+      sendCheatLog("시험 창 포커스 이탈");
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && !alreadyHandledRef.current) {
+        alreadyHandledRef.current = true;
+
+        setShowFocusAlert(true);
+        sendCheatLog("시험 창 탭 전환 또는 창 숨김 감지 이탈");
+      }
+    };
+
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [examId, studentLoginId]);
+
+  useEffect(() => {
+    const handleMouseLeave = (e) => {
+      // 마우스가 브라우저 창 경계를 벗어났는지 확인
+      const outTop = e.clientY <= 0;
+      const outLeft = e.clientX <= 0;
+      const outRight = e.clientX >= window.innerWidth;
+      const outBottom = e.clientY >= window.innerHeight;
+
+      if ((outTop || outLeft || outRight || outBottom) && !alreadyHandledRef.current) {
+        alreadyHandledRef.current = true;
+        setShowFocusAlert(true);
+        sendCheatLog("마우스가 창 밖으로 벗어남");
+      }
+    };
+
+    document.addEventListener("mouseleave", handleMouseLeave);
+    return () => {
+      document.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, []);
+
+
+  //로그 전송용용
+  const sendCheatLog = (detail) => {
+    const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
+    if (!classroomId) return;
+
+    axios.post("/api/logs/cheat", {
+      studentId: studentLoginId.toString(),
+      timestamp: getKSTTimeString(),
+      classroomId: classroomId.toString(),
+      examId: examId.toString(),
+      detail: detail
+    }).then(() => {
+      console.log("[LOG] 부정행위 로그 전송 완료:", detail);
+    }).catch((err) => {
+      console.error("[LOG] 부정행위 로그 전송 실패:", err);
+    });
+  };
+
+
+
+
 
 // 시간 포맷 (초 → MM:SS)
   const formatTime = (sec) => {
@@ -391,7 +511,48 @@ const ExamOn = () => {
           </div>
         )}
       </div>
+      {showFocusAlert && (
+        <div className="modal">
+          <div className="modal-box">
+            <h2>⚠ 창 이탈 감지</h2>
+            <p>시험 중에는 다른 창으로 이동할 수 없습니다.</p>
+            <div className="delete-buttons">
+              <button
+                className="submit-btn"
+                onClick={() => {
+                  setShowFocusAlert(false);
+                  alreadyHandledRef.current = false;
+                }}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showKeyAlert && (
+        <div className="modal">
+          <div className="modal-box">
+            <h2>⚠ 금지된 키 입력</h2>
+            <p>{keyAlertMessage}</p>
+            <div className="delete-buttons">
+              <button
+                className="submit-btn"
+                onClick={() => {
+                  setShowKeyAlert(false); // ✅ 이거!
+                  alreadyHandledRef.current = false;
+                }}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </MainLayout>
+    
   );
 };
 
