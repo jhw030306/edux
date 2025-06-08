@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { MainLayout } from "../../../layout/MainLayout";
-import ExamViewerModal from "./ExamViewerModal"; // 🔹 새로 추가
+import ExamViewerModal from "./ExamViewerModal";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+
 import "../Lecture.css";
 
 export const ProctoringPage = () => {
@@ -13,6 +16,21 @@ export const ProctoringPage = () => {
   const [logFilter, setLogFilter] = useState("all");
   const [alerts, setAlerts] = useState([]);
 
+  const formatTime = (isoString) => {
+    if (!isoString) return "-";
+    const date = new Date(isoString);
+    return date.toLocaleString("ko-KR", {
+      hour12: false,
+      year: "2-digit",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
+
+
   // 알림 추가
   const addAlert = (text, type = "warn") => {
     const id = Date.now();
@@ -22,62 +40,105 @@ export const ProctoringPage = () => {
     }, 5000);
   };
 
-  // 자동 로그 갱신
   useEffect(() => {
-    const interval = setInterval(() => {
-      console.log(
-        "🔄 로그 자동 새로고침",
-        new Date().toLocaleTimeString()
-      );
-      setStudents((prev) => {
-        const updated = [...prev];
-        const s = updated[0];
-        const now = new Date()
-          .toLocaleTimeString()
-          .slice(0, 8);
-        const newLog = {
-          time: now,
-          message: "Alt+Tab 감지",
-          type: "warn",
-        };
-        s.logs = [...s.logs, newLog];
-        addAlert(`[${s.name}] ${newLog.message}`, "warn");
-        return updated;
+    if (!exam?.id) return;
+
+    const socket = new SockJS("http://52.78.166.79:8080/ws");
+    const client = new Client({
+      webSocketFactory: () => socket,
+      debug: (str) => console.log(str),
+      reconnectDelay: 5000,
+    });
+
+    client.onConnect = () => {
+      client.subscribe(`/topic/exam/${exam.id}`, (message) => {
+        const data = JSON.parse(message.body);
+        console.log("📩 실시간 로그 수신:", data);
+
+        const alertType = getAlertType(data.status); // 타입 판단
+
+        // 👉 알림 + 상태 업데이트 등 처리
+        addAlert(`[${data.name}] ${data.status} - ${data.detail || ""}`, "warn");
+
       });
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
+    };
+
+    client.activate();
+
+    return () => {
+      client.deactivate();
+    };
+  }, [exam]);
+
 
   // 초기 데이터
   useEffect(() => {
-    setStudents([
-      {
-        id: 1,
-        name: "지혜원",
-        studentNumber: "2226071",
-        status: "active",
-        connectedAt: "10:30",
-        logs: [
-          {
-            time: "10:30:04",
-            message: "시험 시작",
-            type: "info",
-          },
-          {
-            time: "10:35:27",
-            message: "Alt+Tab 감지",
-            type: "warn",
-          },
-        ],
-      },
-    ]);
-  }, []);
+    const examInfoId = exam?.id;
+    const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
+
+    if (!examInfoId || !classroomId) return;
+
+    const fetchStudents = async () => {
+      try {
+        const response = await fetch(
+          `/api/logs/in-exam-status?examId=${examInfoId}&classroomId=${classroomId}`
+        );
+        if (!response.ok) throw new Error("시험 상태 불러오기 실패");
+        
+
+        const data = await response.json();
+
+        // 변환해서 상태에 저장
+        const formatted = data.map((s) => ({
+          id: s.studentId,
+          name: s.name,
+          studentNumber: s.studentNumber,
+          status: s.status,
+          connectedAt: formatTime(s.enterTime),
+          logs: [] // 나중에 로그 API로 채울 예정
+        }));
+        console.log("📩 실시간 로그 수신:", data);
+
+
+        setStudents(formatted);
+      } catch (e) {
+        console.error("Error fetching exam status", e);
+      }
+    };
+
+    fetchStudents();
+  }, [exam]);
+
 
   const statusColor = {
-    active: "green",
-    inactive: "gray",
-    suspicious: "red",
+    IN_EXAM: "green", //시험중
+    SAVE_EXAM: "blue", //시험 완료
+    EXAM_EXIT: "yellow", //예기치 못한 퇴장
+    CHEAT: "red", //부정행위
+    NO: "gray", // 입장 안함
   };
+
+  const fetchStudentLogs = async (studentId, classroomId, examId) => {
+    try {
+      const res = await fetch(
+        `/api/logs/student-logs?studentId=${studentId}&classroomId=${classroomId}&examId=${examId}`
+      );
+      if (!res.ok) throw new Error("로그 불러오기 실패");
+      const data = await res.json();
+
+      // 로그 포맷 변환
+      return data.map((log) => ({
+        time: formatTime(log.timestamp),
+        message: log.detail || log.status,
+        type: log.status === "CHEAT" || log.status === "EXAM_EXIT" ? "warn" : "info",
+      }));
+    } catch (err) {
+      console.error("❌ 로그 요청 실패:", err);
+      return [];
+    }
+  };
+
+
 
   const getLogColor = (type) => {
     switch (type) {
@@ -87,10 +148,29 @@ export const ProctoringPage = () => {
         return "red";
       case "submit":
         return "blue";
+      case "error":
+        return "yellow";
       default:
         return "black";
     }
   };
+
+  //실시간 로그 색상
+  const getAlertType = (status) => {
+    switch (status) {
+      case "CHEAT":
+        return "warn"; // 빨간색
+      case "EXAM_EXIT":
+        return "error"; // 빨간색 (예기치 못한 퇴장)
+      case "SAVE_EXAM":
+        return "info"; // 파란색
+      case "IN_EXAM":
+        return "info"; // 초록색
+      default:
+        return "info";
+    }
+  };
+
 
   const filteredLogList = useMemo(() => {
     if (!selectedLog) return [];
@@ -191,14 +271,24 @@ export const ProctoringPage = () => {
                 <td>
                   <button
                     className="action-button"
-                    onClick={() => {
-                      setSelectedLog(s);
+                    onClick={async () => {
+                      const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
+                      const studentId = s.id;
+                      const examId = exam.id;
+
+                      const logs = await fetchStudentLogs(studentId, classroomId, examId);
+
+                      setSelectedLog({
+                        ...s,
+                        logs: logs,
+                      });
                       setLogFilter("all");
                     }}
                   >
                     보기
                   </button>
                 </td>
+
               </tr>
             ))}
           </tbody>

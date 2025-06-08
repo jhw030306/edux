@@ -109,11 +109,15 @@ const ExamReady = () => {
             disabled={timeLeft > 0 || isExpired} // 시작 전이거나 시험 끝났으면 비활성화
             onClick={async () => {
               try {
+                const studentId = sessionStorage.getItem("studentLoginId");
+                const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
                 const res = await fetch(
-                  `/api/logs/exam-status?studentId=${sessionStorage.getItem("studentId")}&examInfoId=${examInfo.id}`
+                  `/api/logs/exam-status?studentId=${studentId}&examInfoId=${examInfo.id}&classroomId=${classroomId}`
                 );
+
                 if (!res.ok) throw new Error("시험 상태 확인 실패");
                 const status = await res.text();
+                console.log("🧾 시험 상태 응답:", status); // ← 여기 추가!
 
                 if (status === "BEFORE") {
                   const mode = examInfo.mode;

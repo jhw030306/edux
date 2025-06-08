@@ -28,9 +28,17 @@ const ExamOn = () => {
     return `${m}:${s}`;
   };
 
+  //한국 시간
+  const getKSTTimeString = () => {
+  const now = new Date();
+  const offset = now.getTime() + 9 * 60 * 60 * 1000;
+  return new Date(offset).toISOString().slice(0, 19);
+};
+
+
   useEffect(() => {
   const script = document.createElement("script");
-  script.src = "";
+  script.src = "https://cse.google.com/cse.js?cx=950d9d6628e044643";
   script.async = true;
   document.body.appendChild(script);
 
@@ -110,13 +118,13 @@ const ExamOn = () => {
   useEffect(() => {
     const handleExit = () => {
       const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
-      const studentId = sessionStorage.getItem("studentLoginId");
+      const studentId = sessionStorage.getItem("studentLoginid");
 
       if (!studentId || !classroomId || !examId) return; // 데이터 없을 때 방지
 
       const payload = {
         studentId: studentId.toString(),
-        timestamp: new Date().toISOString().slice(0, 19),
+        timestamp: getKSTTimeString(), // ✅ UTC가 아니라 KST
         classroomId: classroomId.toString(),
         examId: examId.toString(),
       };
@@ -142,10 +150,6 @@ const ExamOn = () => {
     logExamExit();  // 직접 로그 함수 호출
     navigate("/somewhere");
   };
-
-
-
-
 
   // 자동 저장 (debounce)
   const saveOne = useCallback(
@@ -174,7 +178,7 @@ const ExamOn = () => {
     try {
       await axios.post(url, {
         studentId: studentLoginId.toString(), // ✅ 문자열로 변환
-        timestamp: new Date().toISOString().slice(0, 19),
+        timestamp: getKSTTimeString(), // ✅ UTC가 아니라 KST
         classroomId: classroomId.toString(), // ✅ 꼭 문자열
         examId: examId.toString()
       });

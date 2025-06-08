@@ -1,14 +1,28 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      global: 'globalthis', // 여전히 alias 추가
+    },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        global: 'globalThis', // 핵심: SockJS가 사용하는 global 정의
+      },
+    },
+  },
   server: {
-    // port: 5173,
     proxy: {
-      "/api": {
-        target: "http://:8080",
+      '/ws': {
+        target: 'http://localhost:8080',
+        ws: true,
+      },
+      '/api': {
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
       },
