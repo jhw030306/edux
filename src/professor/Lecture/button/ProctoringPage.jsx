@@ -43,7 +43,7 @@ export const ProctoringPage = () => {
   useEffect(() => {
     if (!exam?.id) return;
 
-    const socket = new SockJS("http://52.78.166.79:8080/ws");
+    const socket = new SockJS("/ws");
     const client = new Client({
       webSocketFactory: () => socket,
       debug: (str) => console.log(str),
