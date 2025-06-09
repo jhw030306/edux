@@ -159,3 +159,9 @@
 .student-table tr:nth-child(even) {
   background-color: #fafafa;
 }
+
+/* 로그 보기 모달 내용 정렬용 */
+.modal-box ul {
+  margin-top: 12px;
+  padding-left: 20px;
+}
