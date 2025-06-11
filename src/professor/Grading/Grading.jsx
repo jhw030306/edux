@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
-import "./Grading.css"; // 스타일 따로 관리
+import "./Grading.css";
 import axios from "axios";
 
 const Grading = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 이전 화면 또는 sessionStorage에서 넘어온 exam 정보
   const examFromState = location.state?.exam;
   const examFromStorage = sessionStorage.getItem("selectedExam");
   const exam = examFromState || (examFromStorage && JSON.parse(examFromStorage));
@@ -18,98 +19,118 @@ const Grading = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  // 1) 학생 목록 + 응시/채점 상태 가져오기
+  const fetchStudents = useCallback(async () => {
     if (!examId || !classroomId) {
       console.error("❌ classroomId 또는 examId가 없습니다.");
       return;
     }
 
-    const fetchStudents = async () => {
-      try {
-        const { data: studentList } = await axios.get(
-          `/api/professor/student-classrooms/classroom/${classroomId}/students`
-        );
+    try {
+      // 1-0) 강의실 학생 목록
+      const { data: list } = await axios.get(
+        `/api/professor/student-classrooms/classroom/${classroomId}/students`
+      );
 
-        const updatedList = await Promise.all(
-          studentList.map(async (student) => {
-            try {
-              const { data: answers } = await axios.get(
-                `/api/exam-result/answers`,
-                {
-                  params: {
-                    examId,
-                    userId: student.studentId,
-                  },
-                }
-              );
+      const updated = await Promise.all(
+        list.map(async (stu) => {
+          // 1-1) 응시 여부 확인
+          let answers = [];
+          try {
+            const resAns = await axios.get("/api/exam-result/answers", {
+              params: { examId, userId: stu.studentId },
+            });
+            answers = resAns.data;
+          } catch (e) {
+            if (e.response?.status !== 404) throw e;
+          }
+          if (answers.length === 0) {
+            // 응시하지 않음
+            return { ...stu, score: null, status: "미응시" };
+          }
 
-              const status = answers.length === 0 ? "미응시" : "미채점";
-              const score = answers.some((a) => a.score != null)
-                ? answers.reduce((sum, a) => sum + (a.score || 0), 0)
-                : null;
-              return {
-                ...student,
-                score,
-                status: score !== null ? "채점 완료" : status,
-              };
-            } catch (err) {
-              if (err.response?.status === 404) {
-                return {
-                  ...student,
-                  score: null,
-                  status: "미응시",
-                };
-              }
-              console.error("❌ 답안 조회 실패", err);
-              return {
-                ...student,
-                score: null,
-                status: "오류",
-              };
-            }
-          })
-        );
+          // 1-2) grading/status 로 채점 현황 확인
+          const { data: gradingList } = await axios.get("/api/grading/status", {
+            params: { examId, studentId: stu.studentId },
+          });
 
-        setStudents(updatedList);
-      } catch (err) {
-        console.error("❌ 학생 목록 조회 실패", err);
-      }
-    };
+          if (gradingList.length === 0) {
+            // 답안은 있지만 채점 전
+            return { ...stu, score: null, status: "미채점" };
+          }
 
+          // 채점된 문항만 필터
+          const scored = gradingList.filter((g) => g.score != null);
+          const allDone = scored.length === gradingList.length;
+
+          if (!allDone) {
+            // 일부만 채점된 상태 → 여전히 미채점
+            return { ...stu, score: null, status: "미채점" };
+          }
+
+          // 1-3) 모든 채점 완료 → 총점 조회
+          const { data: totalObj } = await axios.get("/api/grading/total-score", {
+            params: {
+              name: stu.name,
+              studentNumber: stu.studentNumber,
+              examId,
+            },
+          });
+
+          return {
+            ...stu,
+            score: totalObj.totalScore, // total-score API 결과
+            status: "채점 완료",
+          };
+        })
+      );
+
+      setStudents(updated);
+    } catch (err) {
+      console.error("❌ 학생 목록 조회 실패", err);
+    }
+  }, [examId, classroomId]);
+
+  // 2) 컴포넌트 마운트 및 examId/classroomId 변경 시
+  useEffect(() => {
     fetchStudents();
-  }, [classroomId, examId]);
+  }, [fetchStudents]);
 
-   const handleAutoGrading = async () => {
+  // 3) 자동채점 처리
+  const handleAutoGrading = async () => {
     if (!examId) return;
-
     setLoading(true);
     try {
-      const targetStudents = students.filter((s) => s.status !== "미응시");
-
-      for (const student of targetStudents) {
-        await axios.post("/api/grading/autograde", null, {
-          params: {
-            name: student.name,
-            studentNumber: student.studentNumber,
-            examId,
-          },
-        });
-      }
-
-      alert("자동채점이 완료되었습니다.");
-      window.location.reload(); // 다시 로딩해서 상태 업데이트
+      // “미채점” 상태인 학생만 자동채점 API 호출
+      const toGrade = students.filter((s) => s.status === "미채점");
+      await Promise.all(
+        toGrade.map((s) =>
+          axios.post(
+            "/api/grading/autograde",
+            null,
+            {
+              params: {
+                name: s.name,
+                studentNumber: s.studentNumber,
+                examId,
+              },
+            }
+          )
+        )
+      );
+      alert("자동채점 완료");
+      // 재조회하여 갱신
+      await fetchStudents();
     } catch (err) {
       console.error("자동채점 실패", err);
-      alert("자동채점 중 오류가 발생했습니다.");
+      alert("자동채점 중 오류 발생");
     } finally {
       setLoading(false);
     }
   };
 
   const goToStudentGrading = (student) => {
-    navigate("/gradingstudent", {
-      state: { student, examId },
-    });
+    navigate("/gradingstudent", { state: { student, examId } });
   };
 
   return (
@@ -140,12 +161,14 @@ const Grading = () => {
               <tr key={s.studentId}>
                 <td>{s.name}</td>
                 <td>{s.studentNumber}</td>
-                <td>{s.score !== null ? s.score : "-"}</td>
+                {/* score는 “채점 완료”일 때만, 아니면 ‘-’ */}
+                <td>{s.status === "채점 완료" ? s.score : "-"}</td>
                 <td>{s.status}</td>
                 <td>
                   <button
                     className="view-btn"
                     onClick={() => goToStudentGrading(s)}
+                    disabled={s.status === "미응시"}
                   >
                     시험지 보기
                   </button>
