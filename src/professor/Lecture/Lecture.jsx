@@ -28,12 +28,14 @@ export const ProLecture = () => {
     });
   };
   const goToGrading = (exam) => {
-    sessionStorage.setItem(
-      "selectedExam",
-      JSON.stringify(exam)
-    );
+    const fullExam = {
+      ...exam,
+      classroomId: _lecture?.id, // 현재 강의실 ID를 exam 객체에 추가
+    };
+
+    sessionStorage.setItem("selectedExam", JSON.stringify(fullExam));
     navigate("/grading", {
-      state: { exam },
+      state: { exam: fullExam },
     });
   };
 
@@ -286,7 +288,7 @@ export const ProLecture = () => {
 
               <button
                 className="action-button"
-                onClick={() => goToGrading("/grading")}
+                onClick={() => goToGrading(exam)}
               >
                 시험 채점
               </button>
