@@ -1,56 +1,34 @@
-/* GradingStudent.css */
-
-.exam-wrapper {
-  background: #f4f6f9;
-  width: 100%;
-  height: 100vh;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.exam-off-layout {
+.exam-page-container {
   display: flex;
-  justify-content: center;
-  padding: 40px 0;
-}
-
-.exam-panels {
-  display: flex;
-  gap: 20px;
+  flex-direction: row;
+  padding: 32px;
   max-width: 1200px;
-  width: 100%;
   margin: 0 auto;
-  padding: 0 24px;
+  gap: 24px;
 }
 
 .left-panel {
-  flex: 2;
-  background: #fff;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .right-panel {
-  width: 260px;
+  width: 240px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  align-items: stretch;
 }
 
 .question-box {
-  padding: 12px 20px;
-  border: 1px solid #ccc;
+  background: white;
+  padding: 20px;
   border-radius: 12px;
-  background-color: #fff;
-  text-align: left;
-  margin-bottom: 16px;
-  line-height: 1.5;
+  border: 1px solid #ccc;
 }
 
 .question-box h4 {
-  margin-top: 0;
   margin-bottom: 12px;
   font-weight: bold;
   text-align: left;
@@ -59,58 +37,79 @@
 .options {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 8px;
-  margin-top: 10px;
 }
 
 .option-label {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  font-size: 16px;
-  padding: 6px 10px;
+  padding: 10px 0px;
   border-radius: 6px;
+  background: #f9f9f9;
+  font-size: 15px;
   width: 100%;
-  box-sizing: border-box;
-  text-align: left;
+  min-width: 200px; /* 답안 내용이 길어져도 일정 너비 보장 */
+  /* word-break: keep-all; 줄바꿈 방지 */
+  white-space: nowrap;
+  overflow-x: auto;
+  gap: 12px;
 }
 
 .option-label input {
-  margin-right: 8px;
+  margin-right: -200px;
+  flex-shrink: 0;
 }
 
-.option-text {
-  display: inline-block;
+.option-label .option-text {
+  flex-grow: 50;
 }
 
-/* 응시자 선택 항목 굵게 */
+/* 강조: 파란 배경 - 정답 */
+.option-label.correct {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+}
+
+/* 강조: 빨간 배경 - 학생 오답 */
+.option-label.wrong {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border: 1px solid #e57373;
+}
+
+/* 학생이 선택한 보기(굵게) */
 .option-label.student {
   font-weight: bold;
 }
 
-/* 정답 - 파란색 텍스트 */
-.option-label.correct {
+.correct-label {
   color: #0d47a1;
-  background-color: #e3f2fd;
 }
 
-/* 틀린 응답 - 빨간색 강조 */
+.option-label.correct {
+  background-color: #e3f2fd ;
+  color: #0d47a1 ;
+}
 .option-label.wrong {
-  color: #d32f2f;
   background-color: #ffebee;
+  color: #d32f2f;
+  border: 1px solid #e57373;
+}
+.option-label.student {
+  font-weight: bold;
 }
 
 textarea {
   width: 100%;
   min-height: 120px;
+  margin-top: 8px;
   padding: 12px;
   font-size: 16px;
+  background: #fafafa;
   border: 1px solid #ccc;
   border-radius: 6px;
-  background: #fafafa;
   resize: vertical;
-  box-sizing: border-box;
 }
 
 .score-input-row {
@@ -119,49 +118,90 @@ textarea {
   align-items: center;
   gap: 6px;
   margin-top: 12px;
-  font-size: 14px;
 }
 
 .score-input-row input {
-  width: 40px;
-  padding: 4px 6px;
-  font-size: 14px;
-  border: 1px solid #aaa;
-  border-radius: 4px;
+  width: 60px;
   text-align: right;
 }
 
 .timer-box {
-  font-size: 14px;
-  font-weight: 600;
-  padding: 8px 12px;
-  background: #fff;
+  padding: 12px;
+  background: white;
   border-radius: 6px;
-  border: 1px solid #ccc;
   text-align: center;
+  border: 1px solid #ccc;
+  font-weight: bold;
 }
 
 .submit-btn {
   padding: 12px;
-  font-size: 16px;
-  font-weight: 600;
+  font-weight: bold;
+  background: #0d365c;
+  color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  background-color: #0d365c;
-  color: white;
-  transition: background 0.2s;
-}
-
-.submit-btn:hover {
-  background-color: #092b47;
 }
 
 .return-btn {
-  background-color: #ccc;
+  background: #ccc;
   color: #000;
 }
 
-.return-btn:hover {
-  background-color: #bbb;
+/* 질문 박스 전체를 상대 위치로 잡아서 */
+.question-box {
+  position: relative;
+  padding-top: 1.5em; /* 심볼 높이만큼 위쪽 여백 */
+  margin-bottom: 2em;  /* 박스 간 여백 */
 }
+
+/* 심볼을 박스 왼쪽 위에 겹치도록 */
+.status-symbol {
+  position: absolute;
+  top: 0;    /* .question-box 의 패딩 바깥쪽 꼭대기 */
+  left: 0;   /* 왼쪽 모서리 */
+  font-size: 4rem;       /* 원하시는 크기 조절 */
+  line-height: 1;
+  opacity: 0.9;          /* 텍스트를 가리지 않도록 반투명 */
+  z-index: 1;
+  pointer-events: none;  /* 클릭 방해 방지 */
+}
+
+/* 헤더는 심볼 위에 나오도록 z-index 조정 */
+.question-box h4 {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  font-size: 1rem;
+  padding-left: 0em;   /* 심볼과 겹친 부분 보정 */
+}
+
+
+.status-symbol.circle {
+  color: #e03c3c;   
+}
+
+.status-symbol.triangle {
+  color: #e03c3c;  
+}
+
+.status-symbol.slash {
+  color: #e03c3c;  
+}
+
+/* 학생 틀린 정답 표시: 빨간 배경, 체크는 없음 */
+.option-label.wrong-answer {
+  background-color: #ffd6d6 !important;
+  color: #c62828 !important;
+  border: 1px solid #e57373;
+}
+
+/* 맞힌 문제: 파란 배경 + 파란 테두리 + 체크 */
+.option-label.correct-border {
+  background-color: #e3f2fd;
+  border: 1px solid #3678f0;
+  color: #0d47a1;
+}
+
+
