@@ -8,7 +8,6 @@ const Grading = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ exam을 location.state 또는 sessionStorage에서 복구
   const examFromState = location.state?.exam;
   const examFromStorage = sessionStorage.getItem("selectedExam");
   const exam = examFromState || (examFromStorage && JSON.parse(examFromStorage));
@@ -17,6 +16,7 @@ const Grading = () => {
   const classroomId = exam?.classroomId;
 
   const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!examId || !classroomId) {
@@ -79,8 +79,31 @@ const Grading = () => {
     fetchStudents();
   }, [classroomId, examId]);
 
-  const handleAutoGrading = () => {
-    alert("자동채점 기능은 아직 연결되어 있지 않습니다.");
+   const handleAutoGrading = async () => {
+    if (!examId) return;
+
+    setLoading(true);
+    try {
+      const targetStudents = students.filter((s) => s.status !== "미응시");
+
+      for (const student of targetStudents) {
+        await axios.post("/api/grading/autograde", null, {
+          params: {
+            name: student.name,
+            studentNumber: student.studentNumber,
+            examId,
+          },
+        });
+      }
+
+      alert("자동채점이 완료되었습니다.");
+      window.location.reload(); // 다시 로딩해서 상태 업데이트
+    } catch (err) {
+      console.error("자동채점 실패", err);
+      alert("자동채점 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const goToStudentGrading = (student) => {
@@ -96,8 +119,9 @@ const Grading = () => {
           <button
             className="auto-grade-btn"
             onClick={handleAutoGrading}
+            disabled={loading}
           >
-            자동채점
+            {loading ? "자동채점 중..." : "자동채점"}
           </button>
         </div>
 
