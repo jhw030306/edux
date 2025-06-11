@@ -10,7 +10,6 @@ export default function GradingStudent() {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 전체 데이터 불러오기
   const fetchFull = async () => {
     const { data: full } = await axios.get("/api/grading/full", {
       params: { examId, studentId: student.studentId },
@@ -29,7 +28,6 @@ export default function GradingStudent() {
       .finally(() => setLoading(false));
   }, [student, examId]);
 
-  // 서술형 점수 저장
   const handleSave = async () => {
     try {
       const toSave = answers.filter((q) => q.type === "subjective");
@@ -58,7 +56,6 @@ export default function GradingStudent() {
     );
   }
 
-  // 전체 총점 계산
   const totalScore = answers.reduce((sum, q) => sum + (q.autoScore || 0), 0);
 
   return (
@@ -72,72 +69,64 @@ export default function GradingStudent() {
               type,
               options = [],
               correctAnswer,
+              correctIndex,
               studentAnswer,
               autoScore,
               maxScore,
+              isGrade,
             } = q;
 
-            // 객관식용 인덱스
-            const correctIdx = options.indexOf(correctAnswer);
-            // 학생 인덱스 (multiple 은 인덱스 값으로)
-            let studentIdx = -1;
-            if (type === "multiple") {
-              studentIdx = Number(studentAnswer);
-            } else {
-              studentIdx = options.indexOf(studentAnswer);
-            }
+            const displayedOptions = type === "ox" ? ["O", "X"] : options || [];
+            const correctIdx = Number(correctIndex ?? -1);
+            const studentIdx =
+              type === "multiple" ? Number(studentAnswer) : displayedOptions.indexOf(studentAnswer);
 
-            // 상태 기호: 0점 → ／, 일부 점수 → △, 만점 → ○
-            let statusSymbol = autoScore === 0 ? "／"
-                              : autoScore === maxScore ? "○"
-                              : "△";
+            // 상태 기호: 채점 완료된 경우에만 표시
+            let statusSymbol = "";
+            if (isGrade === 1) {
+              if (autoScore === 0) statusSymbol = "／";
+              else if (autoScore === maxScore) statusSymbol = "○";
+              else statusSymbol = "△";
+            }
 
             return (
               <div className="question-box" key={questionId}>
-                {/* 절대 위치된 상태 심볼 */}
-                <span
-                  className={`status-symbol ${
-                    statusSymbol === "○"
-                      ? "circle"
-                      : statusSymbol === "△"
+                {statusSymbol && (
+                  <span
+                    className={`status-symbol ${
+                      statusSymbol === "○"
+                        ? "circle"
+                        : statusSymbol === "△"
                         ? "triangle"
                         : "slash"
-                  }`}
-                >
-                  {statusSymbol}
-                </span>
+                    }`}
+                  >
+                    {statusSymbol}
+                  </span>
+                )}
 
-                {/* 질문 헤더 */}
                 <h4>{idx + 1}. {questionText}</h4>
 
-                {/* 객관식 / OX */}
                 {type !== "subjective" ? (
                   <div className="options">
-                    {options.map((opt, i) => {
-                      const isStudent = i === studentIdx;
-                      const isCorrect = i === correctIdx;
+                    {displayedOptions.map((opt, i) => {
+                      const isStudentAnswer =
+                        type === "multiple" ? String(i) === String(studentAnswer) : opt === studentAnswer;
+                      const isCorrectAnswer =
+                        type === "multiple" ? i === correctIdx : opt === correctAnswer;
 
-                      // 기본 클래스
                       let labelClass = "option-label";
-                      let checked    = false;
+                      let checked = false;
 
-                      if (autoScore === 0) {
-                        // 틀린 문제
-                        if (isStudent) {
-                          // 학생 오답: 회색 배경 + 체크
-                          labelClass += " student-selected";
-                          checked    = true;
-                        }
-                        if (isCorrect) {
-                          // 교수 정답: 빨간 배경
-                          labelClass += " wrong-answer";
-                        }
-                      } else {
-                        // 맞힌 문제 (autoScore > 0)
-                        if (isStudent && isCorrect) {
-                          // 학생이 맞힌 정답: 파란 배경 + 테두리 + 체크
-                          labelClass += " correct-border";
-                          checked    = true;
+                      if (isGrade === 1) {
+                        if (isStudentAnswer && isCorrectAnswer) {
+                          labelClass += " correct";
+                          checked = true;
+                        } else if (isStudentAnswer && !isCorrectAnswer) {
+                          labelClass += " wrong";
+                        } else if (!isStudentAnswer && isCorrectAnswer) {
+                          labelClass += " student";
+                          checked = true;
                         }
                       }
 
@@ -148,10 +137,8 @@ export default function GradingStudent() {
                         </label>
                       );
                     })}
-
                   </div>
                 ) : (
-                  // 서술형
                   <div className="subjective-answer-block">
                     <label>학생 답안:</label>
                     <textarea value={studentAnswer || ""} readOnly disabled />
@@ -160,7 +147,6 @@ export default function GradingStudent() {
                   </div>
                 )}
 
-                {/* 점수 입력 */}
                 <div className="score-input-row">
                   <label>점수:</label>
                   <input
@@ -191,7 +177,6 @@ export default function GradingStudent() {
           })}
         </div>
 
-        {/* 우측 패널: 총점 및 버튼 */}
         <div className="right-panel">
           <div className="timer-box">총점: {totalScore}</div>
           <button className="submit-btn" onClick={handleSave}>

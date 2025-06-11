@@ -57,7 +57,7 @@
 }
 
 .option-label input {
-  margin-right: -700px;
+  margin-right: -200px;
   flex-shrink: 0;
 }
 
@@ -190,7 +190,7 @@ textarea {
   color: #e03c3c;  
 }
 
-/* 실제 정답(교수정답) 표시: 빨간 배경, 체크는 없음 */
+/* 학생 틀린 정답 표시: 빨간 배경, 체크는 없음 */
 .option-label.wrong-answer {
   background-color: #ffd6d6 !important;
   color: #c62828 !important;
@@ -203,3 +203,5 @@ textarea {
   border: 1px solid #3678f0;
   color: #0d47a1;
 }
+
+
