@@ -23,18 +23,13 @@ export const ProLecturepage = () => {
   department: "",
 });
 
-  // 로그인 상태에 따라 분기
    const goToHome = () => {
-    if (window.location.pathname === "/stulecturelist") {
-      //이미 LectureList화면이면 새로고침
-      window.location.reload();
-      return;
-    }
-    if (studentId) {
-      navigate("/stulecturelist");
+    // 현재 "/"가 아니면 메인으로, 메인이면 새로고침
+     if (window.location.pathname === "/prolecturelist") {
+       window.location.reload();
     } else {
-      navigate("/main");
-    }
+       navigate("/main");
+     }
   };
 
   // 강의 상세 페이지로 이동하는 함수

@@ -48,7 +48,7 @@ const QuestionCard = ({
   };
 
   const toggleAnswer = (i) => {
-    onUpdate({ ...data, answer: i });
+    onUpdate({ ...data, answer: [i] });
   };
 
   const autoResize = () => {
@@ -74,7 +74,7 @@ const QuestionCard = ({
           <textarea
             ref={textareaRef}
             className="question-textarea"
-            value={data.question}
+            value={data.question ?? ""}
             onChange={(e) =>
               handleChange("question", e.target.value)
             }
@@ -100,7 +100,7 @@ const QuestionCard = ({
                 <input
                   type="radio"
                   name={`single-${data.id}`}
-                  checked={data.answer === i}
+                  checked={Array.isArray(data.answer) && data.answer.includes(i)}
                   onChange={() => toggleAnswer(i)}
                 />
               </label>
@@ -109,7 +109,7 @@ const QuestionCard = ({
 
               <input
                 type="text"
-                value={opt}
+                value={opt ?? ""} 
                 onChange={(e) =>
                   handleOptionChange(i, e.target.value)
                 }
@@ -169,7 +169,7 @@ const QuestionCard = ({
         <input
           type="text"
           placeholder="예시 답안 또는 키워드"
-          value={data.answer || ""}
+          value={data.answer ?? ""}
           onChange={(e) =>
             handleChange("answer", e.target.value)
           }
@@ -181,7 +181,7 @@ const QuestionCard = ({
       <div className="question-footer-controls">
         <input
           type="number"
-          value={data.score}
+          value={data.score ?? ""}
           min={0}
           onChange={(e) =>
             handleChange("score", parseInt(e.target.value))

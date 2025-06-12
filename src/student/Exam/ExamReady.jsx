@@ -1,68 +1,84 @@
 // src/student/Exam/ExamReady.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamReady.css";
 
 const ExamReady = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const examId = searchParams.get("examId");
 
-  // ✅ 하드코딩된 시험 정보 (API 없이 테스트용)
-  const examInfo = {
-    id: 1,
-    title: "캡스톤디자인 중간고사",
-    className: "캡스톤디자인 1분반",
-    testStartTime: "2025-05-27T23:59:59", // 미래 시간
-    allowInternet: true,
-    duration: 60,
-    notice: "부정행위 금지, 시험 시간은 60분입니다.",
-  };
-
+  const [examInfo, setExamInfo] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
-    const start = new Date(
-      examInfo.testStartTime
-    ).getTime();
-    let timer; // ✅ 미리 선언
+    if (!examId) return;
+    const fetchExamInfo = async () => {
+      try {
+        const res = await fetch(`/api/exams/${examId}`);
+        if (!res.ok) throw new Error("시험 정보 불러오기 실패");
+        const data = await res.json();
+        setExamInfo(data);
+        console.log("📦 examInfo 응답:", data);
 
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const diff = Math.max(
-        0,
-        Math.floor((start - now) / 1000)
-      );
-      setTimeLeft(diff);
-
-      if (diff <= 0) {
-        clearInterval(timer);
-        navigate(
-          examInfo.allowInternet
-            ? `/examon?examId=${examInfo.id}`
-            : `/examoff?examId=${examInfo.id}`
-        );
+      } catch (err) {
+        console.error(err);
+        alert("시험 정보를 불러오는 데 실패했습니다.");
       }
     };
+    fetchExamInfo();
+  }, [examId]);
+  
 
+  useEffect(() => {
+    if (!examInfo) return;
+
+    const start = new Date(examInfo.testStartTime).getTime();
+    const end = new Date(examInfo.testEndTime).getTime();
+    let timer;
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const diff = Math.max(0, Math.floor((start - now) / 1000));
+      setTimeLeft(diff);
+      
+      if (diff <= 0) {
+        clearInterval(timer);
+
+        // ↓ 실제 mode 필드 이름에 맞춰 변경
+        const mode = examInfo.mode;           
+        const isDenied = mode === "deny";      //deny면 exmaOff로 나머진 examOn
+
+      } if (now > end) {
+      setIsExpired(true); // 시험 종료됨
+      clearInterval(timer);
+    }
+
+    };
     updateCountdown();
     timer = setInterval(updateCountdown, 1000);
-
     return () => clearInterval(timer);
-  }, [
-    examInfo.testStartTime,
-    examInfo.id,
-    examInfo.allowInternet,
-    navigate,
-  ]);
+  }, [examInfo]);
 
-  const formatTime = (seconds) => {
-    const min = String(Math.floor(seconds / 60)).padStart(
-      2,
-      "0"
-    );
-    const sec = String(seconds % 60).padStart(2, "0");
-    return `${min} : ${sec}`;
+  const formatTime = (totalSeconds) => {
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const parts = [];
+    if (days > 0) parts.push(`${days}일`);
+    if (hours > 0 || days > 0) parts.push(`${hours}시간`);
+    if (minutes > 0 || hours > 0 || days > 0) parts.push(`${minutes}분`);
+    parts.push(`${seconds}초`);
+
+    return parts.join(" ");
   };
+
+
+  if (!examInfo) return <MainLayout>Loading...</MainLayout>;
 
   return (
     <MainLayout>
@@ -78,30 +94,68 @@ const ExamReady = () => {
           </div>
 
           <div className="notice-box">
-            <ul>
-              <li>
-                시험 중 페이지 이탈 시 자동 제출됩니다.
-              </li>
-              <li>부정행위는 실격 처리됩니다.</li>
-              <li>시험 시간은 60분이며 자동 종료됩니다.</li>
-              <li>
-                다른 기기에서의 동시 접속은 불가합니다.
-              </li>
-            </ul>
+            {examInfo.notice ? (
+              <pre style={{ whiteSpace: "pre-wrap", textAlign: "left" }}>
+                {examInfo.notice}
+              </pre>
+            ) : (
+              <p>공지사항이 없습니다.</p>
+            )}
           </div>
+
 
           <button
             className="start-button"
-            onClick={() =>
-              navigate(
-                examInfo.allowInternet
-                  ? `/examon?examId=${examInfo.id}`
-                  : `/examoff?examId=${examInfo.id}`
-              )
-            }
+            disabled={timeLeft > 0 || isExpired} // 시작 전이거나 시험 끝났으면 비활성화
+            onClick={async () => {
+              try {
+                const studentId = sessionStorage.getItem("studentLoginId");
+                const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
+                const res = await fetch(
+                  `/api/logs/exam-status?studentId=${studentId}&examInfoId=${examInfo.id}&classroomId=${classroomId}`
+                );
+
+                if (!res.ok) throw new Error("시험 상태 확인 실패");
+                const status = await res.text();
+                console.log("🧾 시험 상태 응답:", status); // ← 여기 추가!
+
+                if (status === "BEFORE") {
+                  const mode = examInfo.mode;
+                  const isDenied = mode === "deny";
+                  navigate(
+                    isDenied
+                      ? `/examoff?examId=${examInfo.id}`
+                      : `/examon?examId=${examInfo.id}`
+                  );
+                } else if (status === "IN_PROGRESS") {
+                  alert("시험 입장 기록이 있습니다. 부정행위로 감지 될 수 있습니다.");
+                  const mode = examInfo.mode;
+                  const isDenied = mode === "deny";
+                  navigate(
+                    isDenied
+                      ? `/examoff?examId=${examInfo.id}`
+                      : `/examon?examId=${examInfo.id}`
+                  );
+                } else if (status === "FINISHED") {
+                  alert("시험 제출이 완료된 상태입니다.");
+                } else {
+                  alert("알 수 없는 시험 상태입니다.");
+                }
+              } catch (err) {
+                console.error(err);
+                alert("시험 상태를 확인하는 중 오류가 발생했습니다.");
+              }
+            }}
+
           >
-            시험 응시
+            {isExpired
+              ? "시험 종료됨"
+              : timeLeft > 0
+              ? `시험 대기 중 (${formatTime(timeLeft)})`
+              : "시험 응시"}
           </button>
+
+
         </div>
       </div>
     </MainLayout>
