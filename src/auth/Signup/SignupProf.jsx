@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Signuppage.css";
-import axios from "axios";
+import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 
 const SignupProf = () => {
@@ -84,7 +84,7 @@ const SignupProf = () => {
       return;
     }
     try {
-      const response = await axios.get("/api/professors/check-username", {
+      const response = await api.get("/professors/check-username", {
         params: { username: form.username },
       });
 
@@ -148,8 +148,8 @@ const SignupProf = () => {
       return alert("이메일 인증을 완료해주세요.");
 
     try {
-      const response = await axios.post(
-        "/api/professors/register",
+      const response = await api.post(
+        "/professors/register",
         {
           username: form.username,
           password: form.password,

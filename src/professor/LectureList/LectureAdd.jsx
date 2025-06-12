@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./LectureList.css";
-import axios from "axios";
+import api from "../../api/axios";
 
 export const LectureAdd = ({
   onClose,
@@ -67,8 +67,8 @@ export const LectureAdd = ({
     try {
       if (editMode && initialData.id) {
         // ✅ 수정 요청
-        const response = await axios.put(
-          `/api/classrooms/${initialData.id}`,
+        const response = await api.put(
+          `/classrooms/${initialData.id}`,
           {
             className: title,
             section: section,
@@ -88,8 +88,8 @@ export const LectureAdd = ({
         onSubmit(updated); // 프론트에서 업데이트 반영
       } else {
         // ✅ 새로 생성
-        const response = await axios.post(
-          "/api/classrooms",
+        const response = await api.post(
+          "/classrooms",
           {
             className: title,
             section: section,

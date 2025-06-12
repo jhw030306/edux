@@ -5,7 +5,7 @@ import ExamAccess from "./ExamAccess";
 import ExamNotice from "./ExamNotice";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamEditor.css";
-import axios from "axios";
+import api from "../../api/axios";
 
 const ExamEditor = () => {
   const [activeTab, setActiveTab] = useState("settings");
@@ -71,8 +71,8 @@ const ExamEditor = () => {
     // 2) 시험 문제 불러오기
     const fetchQuestions = async () => {
       try {
-        const res = await axios.get(
-          `/api/exam-questions/exam/all/${examId}`
+        const res = await api.get(
+          `/exam-questions/exam/all/${examId}`
         );
         // 번호 순 정렬
         const list = res.data.sort(
@@ -133,8 +133,8 @@ const ExamEditor = () => {
 
     // 3) 허용 범위 불러오기
     const fetchAccess = () => {
-      axios
-        .get(`/api/exam-range/${examId}`)
+      api
+        .get(`/exam-range/${examId}`)
         .then((res) => {
           const { mode, rangeDetails } = res.data;
           setExamData((prev) => ({
@@ -197,8 +197,8 @@ const ExamEditor = () => {
       });
 
       // 2) 문제 전체 bulk autosave
-      await axios.post(
-        "/api/exam-questions/autosave/bulk",
+      await api.post(
+        "/exam-questions/autosave/bulk",
         examData.questions.map((q, idx) => ({
           id: q.id,
           examId,
@@ -217,7 +217,7 @@ const ExamEditor = () => {
       );
 
       // 3) 허용 범위 저장
-      await axios.post("/api/exam-range/save", {
+      await api.post("/exam-range/save", {
         examId,
         mode: examData.access.mode,
         rangeDetails: examData.access.allowedSites,

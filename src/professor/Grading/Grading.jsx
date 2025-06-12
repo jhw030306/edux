@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./Grading.css";
-import axios from "axios";
+import api from "../../api/axios";
 
 const Grading = () => {
   const navigate = useNavigate();
@@ -26,8 +26,8 @@ const Grading = () => {
     }
 
     try {
-      const { data: list } = await axios.get(
-        `/api/professor/student-classrooms/classroom/${classroomId}/students`
+      const { data: list } = await api.get(
+        `/professor/student-classrooms/classroom/${classroomId}/students`
       );
 
       const updated = await Promise.all(
@@ -35,7 +35,7 @@ const Grading = () => {
           // 응시 여부 확인
           let answers = [];
           try {
-            const resAns = await axios.get("/api/exam-result/answers", {
+            const resAns = await api.get("/exam-result/answers", {
               params: { examId, userId: stu.studentId },
             });
             answers = resAns.data;
@@ -48,7 +48,7 @@ const Grading = () => {
           }
 
           // 문제별 is_grade 가져오기
-          const { data: gradeFlags } = await axios.get("/api/exam-result/student", {
+          const { data: gradeFlags } = await api.get("/exam-result/student", {
             params: { examId, userId: stu.studentId },
           });
 
@@ -60,7 +60,7 @@ const Grading = () => {
           }
 
           // 총점 조회
-          const { data: totalObj } = await axios.get("/api/grading/total-score", {
+          const { data: totalObj } = await api.get("/grading/total-score", {
             params: {
               name: stu.name,
               studentNumber: stu.studentNumber,
@@ -94,7 +94,7 @@ const Grading = () => {
       const toGrade = students.filter((s) => s.status === "미채점");
       await Promise.all(
         toGrade.map((s) =>
-          axios.post("/api/grading/autograde", null, {
+          api.post("/grading/autograde", null, {
             params: {
               name: s.name,
               studentNumber: s.studentNumber,

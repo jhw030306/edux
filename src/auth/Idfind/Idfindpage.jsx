@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Idfindpage.css";
-import axios from "axios";
+import api from "../../api/axios";
 
 export const Idfindpage = () => {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ export const Idfindpage = () => {
   const foundIds = [];
 
   try {
-    const profRes = await axios.get("/api/professors/find-id", {
+    const profRes = await api.get("/professors/find-id", {
       params: { name, email },
       withCredentials: true,
     });
@@ -58,7 +58,7 @@ export const Idfindpage = () => {
   }
 
   try {
-    const stuRes = await axios.get("/api/students/find-id", {
+    const stuRes = await api.get("/students/find-id", {
       params: { name, email },
       withCredentials: true,
     });

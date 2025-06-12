@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
 import "./Loginpage.css";
 
 export const Loginpage = () => {
@@ -37,8 +37,8 @@ export const Loginpage = () => {
 
     const url =
       userType === "professor"
-        ? "/api/professors/login"
-        : "/api/students/login";
+        ? "/professors/login"
+        : "/students/login";
     const payload =
       userType === "professor"
         ? {
@@ -51,7 +51,7 @@ export const Loginpage = () => {
           };
 
     try {
-      const response = await axios.post(url, payload, {
+      const response = await api.post(url, payload, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });

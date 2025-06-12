@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
+  base: "/", //배포용
   plugins: [react()],
   resolve: {
     alias: {
@@ -12,19 +13,6 @@ export default defineConfig({
     esbuildOptions: {
       define: {
         global: "globalThis", // 핵심: SockJS가 사용하는 global 정의
-      },
-    },
-  },
-  server: {
-    proxy: {
-      "/ws": {
-        target: "http://52.78.166.79:8080",
-        ws: true,
-      },
-      "/api": {
-        target: "http://52.78.166.79:8080",
-        changeOrigin: true,
-        secure: false,
       },
     },
   },
