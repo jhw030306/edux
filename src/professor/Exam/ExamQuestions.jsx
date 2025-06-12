@@ -2,7 +2,7 @@ import React from "react";
 import QuestionCard from "./Question/QuestionCard";
 import QuestionSidebar from "./Question/QuestionSidebar";
 import "./ExamEditor.css";
-import axios from "axios"
+import api from "../../api/axios"
 
 const ExamQuestions = ({
   examId,
@@ -43,8 +43,8 @@ const ExamQuestions = ({
         distractor: newQuestion.options,
         answer: newQuestion.answer,
       };
-      const res = await axios.post(
-        "/api/exam-questions/autosave",
+      const res = await api.post(
+        "/exam-questions/autosave",
         payload
       );
       const realId = res.data.id;
@@ -82,8 +82,8 @@ const ExamQuestions = ({
         distractor: updated.options,
         answer: updated.answer,
       };
-      const res = await axios.post(
-        "/api/exam-questions/autosave",
+      const res = await api.post(
+        "/exam-questions/autosave",
         payload
       );
       const newId = res.data.id;
@@ -115,7 +115,7 @@ const ExamQuestions = ({
 
     // 4-2) 서버에서 삭제
     try {
-      await axios.delete(`/api/exam-questions/${toRemove.id}`);
+      await api.delete(`/exam-questions/${toRemove.id}`);
     } catch (err) {
       console.error(
         "DELETE API 요청 실패:",
@@ -137,8 +137,8 @@ const ExamQuestions = ({
           distractor: q.options,
           answer: q.answer,
         }));
-      await axios.post(
-        "/api/exam-questions/autosave/bulk",
+      await api.post(
+        "/exam-questions/autosave/bulk",
         bulkPayload
       );
     } catch (err) {

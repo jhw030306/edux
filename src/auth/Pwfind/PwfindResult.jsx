@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./PwfindResultpage.css";
 import { Button } from "../../components/Button";
-import axios from "axios";
+import api from "../../api/axios";
 
 export const PwfindResultpage = () => {
   const navigate = useNavigate();
@@ -59,13 +59,13 @@ export const PwfindResultpage = () => {
     let payload = {};
 
     if (role === "학생") {
-      url = "/api/students/reset-password";
+      url = "/students/reset-password";
       payload = {
         studentId: id,
         newPassword,
       };
     } else if (role === "교수") {
-      url = "/api/professors/reset-password";
+      url = "/professors/reset-password";
       payload = {
         username: id,
         newPassword,
@@ -74,7 +74,7 @@ export const PwfindResultpage = () => {
       throw new Error("역할 정보가 유효하지 않습니다.");
     }
 
-    await axios.post(url, payload, { withCredentials: true });
+    await api.post(url, payload, { withCredentials: true });
 
     alert("비밀번호가 성공적으로 변경되었습니다!");
     navigate("/login");

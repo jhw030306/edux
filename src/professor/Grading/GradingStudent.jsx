@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
-import axios from "axios";
+import api from "../../api/axios";
 import "./GradingStudent.css";
 
 export default function GradingStudent() {
@@ -11,7 +11,7 @@ export default function GradingStudent() {
   const [loading, setLoading] = useState(true);
 
   const fetchFull = async () => {
-    const { data: full } = await axios.get("/api/grading/full", {
+    const { data: full } = await api.get("/grading/full", {
       params: { examId, studentId: student.studentId },
     });
     setAnswers(full);
@@ -33,7 +33,7 @@ export default function GradingStudent() {
       const toSave = answers.filter((q) => q.type === "subjective");
       await Promise.all(
         toSave.map((q) =>
-          axios.post("/api/grading/grade", {
+          api.post("/grading/grade", {
             examQuestionId: q.questionId,
             examResultId: q.examResultId,
             score: q.autoScore,

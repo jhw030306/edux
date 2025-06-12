@@ -4,7 +4,7 @@ import { LectureCard } from "./LectureCard";
 import { LectureAdd } from "./LectureAdd";
 import { LectureDelete } from "./LectureDelete";
 import "./LectureList.css";
-import axios from "axios";
+import api from "../../api/axios";
 
 
 export const ProLecturepage = () => {
@@ -47,7 +47,7 @@ export const ProLecturepage = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post("/api/professors/logout", {}, { withCredentials: true });
+      await api.post("/professors/logout", {}, { withCredentials: true });
     } catch (e) {
       console.warn("로그아웃 실패:", e);
     }
@@ -65,11 +65,11 @@ export const ProLecturepage = () => {
 
     const fetchProfessorAndClassrooms = async () => {
       try {
-        const profRes = await axios.get(`/api/classrooms/professor/${professorId}`);
+        const profRes = await api.get(`/classrooms/professor/${professorId}`);
         const { name, email, department } = profRes.data;
         setProfessorInfo({ name, email, department });
 
-        const lectureRes = await axios.get(`/api/classrooms/professor/${professorId}/classrooms`);
+        const lectureRes = await api.get(`/classrooms/professor/${professorId}/classrooms`);
         const mappedLectures = lectureRes.data.map((lecture) => ({
           ...lecture,
           title: lecture.className,
