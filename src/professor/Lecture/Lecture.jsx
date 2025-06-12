@@ -27,13 +27,19 @@ export const ProLecture = () => {
       state: { exam },
     });
   };
+  const goToLogPage = () => {
+    navigate("/logpage"); // 원하는 경로에 맞게 조정
+  };
   const goToGrading = (exam) => {
     const fullExam = {
       ...exam,
       classroomId: _lecture?.id, // 현재 강의실 ID를 exam 객체에 추가
     };
 
-    sessionStorage.setItem("selectedExam", JSON.stringify(fullExam));
+    sessionStorage.setItem(
+      "selectedExam",
+      JSON.stringify(fullExam)
+    );
     navigate("/grading", {
       state: { exam: fullExam },
     });
@@ -95,10 +101,10 @@ export const ProLecture = () => {
       sessionStorage.getItem("professorId");
     const classroomId = _lecture?.id;
 
-      if (!professorId || !classroomId) {
-        alert("교수 ID 또는 강의실 정보가 없습니다.");
-        return;
-  }
+    if (!professorId || !classroomId) {
+      alert("교수 ID 또는 강의실 정보가 없습니다.");
+      return;
+    }
 
     try {
       const res = await fetch(`/api/exams/create`, {
@@ -108,7 +114,7 @@ export const ProLecture = () => {
           professorId,
           classroomId,
           title: "", // 처음엔 빈 제목
-          duration: 60 //기본값
+          duration: 60, //기본값
         }),
       });
 
@@ -230,7 +236,10 @@ export const ProLecture = () => {
             >
               학생 관리
             </button>
-            <button className="action-button">
+            <button
+              className="action-button"
+              onClick={goToLogPage}
+            >
               로그 관리
             </button>
           </div>

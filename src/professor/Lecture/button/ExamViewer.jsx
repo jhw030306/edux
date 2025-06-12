@@ -17,35 +17,13 @@ const ExamViewer = () => {
         );
         const data = await res.json();
 
-        const formatted = data.map((q) => {
-          const base = {
-            id: q.id,
-            number: q.number,
-            type: q.type,
-            question: q.question,
-          };
-
-          if (q.type === "multiple") {
-            return {
-              ...base,
-              options: q.distractor || [],
-              answerIndex: Number(q.answer) - 1,
-            };
-          } else if (q.type === "subjective") {
-            return {
-              ...base,
-              answer: q.answer || "",
-            };
-          } else if (q.type === "ox") {
-            return {
-              ...base,
-              options: ["O", "X"],
-              answer: q.answer?.toUpperCase(),
-            };
-          } else {
-            return base;
-          }
-        });
+        const formatted = data.map((q) => ({
+          id: q.id,
+          number: q.number,
+          type: q.type,
+          question: q.question,
+          options: q.distractor || [],
+        }));
 
         setQuestions(
           formatted.sort((a, b) => a.number - b.number)
@@ -76,14 +54,7 @@ const ExamViewer = () => {
                   {currentQuestion.options.map(
                     (opt, idx) => (
                       <label key={idx}>
-                        <input
-                          type="radio"
-                          disabled
-                          checked={
-                            idx ===
-                            currentQuestion.answerIndex
-                          }
-                        />
+                        <input type="radio" disabled />
                         {opt}
                       </label>
                     )
@@ -93,15 +64,9 @@ const ExamViewer = () => {
 
               {currentQuestion.type === "ox" && (
                 <div className="options">
-                  {["O", "X"].map((opt, idx) => (
-                    <label key={idx}>
-                      <input
-                        type="radio"
-                        disabled
-                        checked={
-                          opt === currentQuestion.answer
-                        }
-                      />
+                  {["O", "X"].map((opt) => (
+                    <label key={opt}>
+                      <input type="radio" disabled />
                       {opt}
                     </label>
                   ))}
@@ -111,7 +76,8 @@ const ExamViewer = () => {
               {currentQuestion.type === "subjective" && (
                 <textarea
                   readOnly
-                  value={currentQuestion.answer || ""}
+                  value=""
+                  placeholder="정답 비공개"
                 />
               )}
             </div>

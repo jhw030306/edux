@@ -17,6 +17,7 @@ import ExamOn from "./student/Exam/ExamOn";
 import ExamResult from "./student/Exam/ExamResult";
 import ExamFinish from "./student/Exam/ExamFinish";
 import { ProctoringPage } from "./professor/Lecture/button/ProctoringPage";
+import { LogPage } from "./professor/Lecture/button/LogPage";
 import { StudentList } from "./professor/Lecture/button/StudentList";
 import Grading from "./professor/Grading/Grading";
 import GradingStudent from "./professor/Grading/GradingStudent";
@@ -67,6 +68,7 @@ function App() {
         element={<GradingStudent />}
       />
       <Route path="/examresult" element={<ExamResult />} />
+      <Route path="/logpage" element={<LogPage />} />
     </Routes>
   );
 }

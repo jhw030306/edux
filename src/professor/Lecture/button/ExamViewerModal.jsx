@@ -6,10 +6,10 @@ const ExamViewerModal = ({ onClose }) => {
   return (
     <div className="exam-modal-overlay">
       <div className="exam-modal-content">
+        <ExamViewer />
         <button className="close-btn" onClick={onClose}>
           닫기 ✕
         </button>
-        <ExamViewer />
       </div>
     </div>
   );

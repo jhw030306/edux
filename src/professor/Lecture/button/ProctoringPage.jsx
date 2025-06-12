@@ -5,7 +5,7 @@ import ExamViewerModal from "./ExamViewerModal";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 
-import "../Lecture.css";
+import "./button.css";
 
 export const ProctoringPage = () => {
   const location = useLocation();
@@ -30,8 +30,6 @@ export const ProctoringPage = () => {
     });
   };
 
-
-  // 알림 추가
   const addAlert = (text, type = "warn") => {
     const id = Date.now();
     setAlerts((prev) => [...prev, { id, text, type }]);
@@ -51,31 +49,32 @@ export const ProctoringPage = () => {
     });
 
     client.onConnect = () => {
-      client.subscribe(`/topic/exam/${exam.id}`, (message) => {
-        const data = JSON.parse(message.body);
-        console.log("📩 실시간 로그 수신:", data);
-
-        const alertType = getAlertType(data.status); // 타입 판단
-
-        // 👉 알림 + 상태 업데이트 등 처리
-        addAlert(`[${data.name}] ${data.status} - ${data.detail || ""}`, "warn");
-
-      });
+      client.subscribe(
+        `/topic/exam/${exam.id}`,
+        (message) => {
+          const data = JSON.parse(message.body);
+          const alertType = getAlertType(data.status);
+          addAlert(
+            `[${data.name}] ${data.status} - ${
+              data.detail || ""
+            }`,
+            alertType
+          );
+        }
+      );
     };
 
     client.activate();
-
     return () => {
       client.deactivate();
     };
   }, [exam]);
 
-
-  // 초기 데이터
   useEffect(() => {
     const examInfoId = exam?.id;
-    const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
-
+    const classroomId = JSON.parse(
+      sessionStorage.getItem("selectedLecture")
+    )?.id;
     if (!examInfoId || !classroomId) return;
 
     const fetchStudents = async () => {
@@ -83,23 +82,18 @@ export const ProctoringPage = () => {
         const response = await fetch(
           `/api/logs/in-exam-status?examId=${examInfoId}&classroomId=${classroomId}`
         );
-        if (!response.ok) throw new Error("시험 상태 불러오기 실패");
-        
+        if (!response.ok)
+          throw new Error("시험 상태 불러오기 실패");
 
         const data = await response.json();
-
-        // 변환해서 상태에 저장
         const formatted = data.map((s) => ({
           id: s.studentId,
           name: s.name,
           studentNumber: s.studentNumber,
           status: s.status,
           connectedAt: formatTime(s.enterTime),
-          logs: [] // 나중에 로그 API로 채울 예정
+          logs: [],
         }));
-        console.log("📩 실시간 로그 수신:", data);
-
-
         setStudents(formatted);
       } catch (e) {
         console.error("Error fetching exam status", e);
@@ -109,16 +103,19 @@ export const ProctoringPage = () => {
     fetchStudents();
   }, [exam]);
 
-
   const statusColor = {
-    IN_EXAM: "green", //시험중
-    SAVE_EXAM: "blue", //시험 완료
-    EXAM_EXIT: "yellow", //예기치 못한 퇴장
-    CHEAT: "red", //부정행위
-    NO: "gray", // 입장 안함
+    IN_EXAM: "green",
+    SAVE_EXAM: "blue",
+    EXAM_EXIT: "yellow",
+    CHEAT: "red",
+    NO: "gray",
   };
 
-  const fetchStudentLogs = async (studentId, classroomId, examId) => {
+  const fetchStudentLogs = async (
+    studentId,
+    classroomId,
+    examId
+  ) => {
     try {
       const res = await fetch(
         `/api/logs/student-logs?studentId=${studentId}&classroomId=${classroomId}&examId=${examId}`
@@ -126,11 +123,12 @@ export const ProctoringPage = () => {
       if (!res.ok) throw new Error("로그 불러오기 실패");
       const data = await res.json();
 
-      // 로그 포맷 변환
       return data.map((log) => ({
         time: formatTime(log.timestamp),
         message: log.detail || log.status,
-        type: log.status === "CHEAT" || log.status === "EXAM_EXIT" ? "warn" : "info",
+        type: ["CHEAT", "EXAM_EXIT"].includes(log.status)
+          ? "warn"
+          : "info",
       }));
     } catch (err) {
       console.error("❌ 로그 요청 실패:", err);
@@ -138,7 +136,19 @@ export const ProctoringPage = () => {
     }
   };
 
-
+  const getAlertType = (status) => {
+    switch (status) {
+      case "CHEAT":
+        return "warn";
+      case "EXAM_EXIT":
+        return "error";
+      case "SAVE_EXAM":
+      case "IN_EXAM":
+        return "info";
+      default:
+        return "info";
+    }
+  };
 
   const getLogColor = (type) => {
     switch (type) {
@@ -155,23 +165,6 @@ export const ProctoringPage = () => {
     }
   };
 
-  //실시간 로그 색상
-  const getAlertType = (status) => {
-    switch (status) {
-      case "CHEAT":
-        return "warn"; // 빨간색
-      case "EXAM_EXIT":
-        return "error"; // 빨간색 (예기치 못한 퇴장)
-      case "SAVE_EXAM":
-        return "info"; // 파란색
-      case "IN_EXAM":
-        return "info"; // 초록색
-      default:
-        return "info";
-    }
-  };
-
-
   const filteredLogList = useMemo(() => {
     if (!selectedLog) return [];
     return logFilter === "warn"
@@ -185,16 +178,15 @@ export const ProctoringPage = () => {
     <MainLayout>
       <div className="page-content">
         <div
+          className="content-wrapper"
           style={{
+            width: "800px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            width: "800px",
           }}
         >
-          <h2>
-            시험 감독 중: {exam?.title || "시험명 없음"}
-          </h2>
+          <h2>{exam?.title || "시험명 없음"}</h2>
           <button
             className="action-button"
             onClick={() => setShowExamModal(true)}
@@ -203,43 +195,19 @@ export const ProctoringPage = () => {
           </button>
         </div>
 
-        {/* 🔔 알림 팝업 */}
-        <div
-          style={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-          }}
-        >
+        {/* 알림 */}
+        <div className="alert-container">
           {alerts.map((alert) => (
             <div
               key={alert.id}
-              style={{
-                padding: "10px 16px",
-                backgroundColor:
-                  alert.type === "warn"
-                    ? "#ffdddd"
-                    : "#ddf",
-                color:
-                  alert.type === "warn"
-                    ? "#b00000"
-                    : "#003",
-                border: "1px solid #ccc",
-                borderRadius: 6,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                fontWeight: "bold",
-              }}
+              className={`alert-box ${alert.type}`}
             >
               🔴 {alert.text}
             </div>
           ))}
         </div>
 
-        {/* 학생 목록 */}
+        {/* 테이블 */}
         <table className="student-table">
           <thead>
             <tr>
@@ -257,14 +225,9 @@ export const ProctoringPage = () => {
                 <td>{s.studentNumber}</td>
                 <td>
                   <span
-                    style={{
-                      display: "inline-block",
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      backgroundColor:
-                        statusColor[s.status],
-                    }}
+                    className={`status-dot ${
+                      statusColor[s.status]
+                    }`}
                   ></span>
                 </td>
                 <td>{s.connectedAt || "-"}</td>
@@ -272,29 +235,29 @@ export const ProctoringPage = () => {
                   <button
                     className="action-button"
                     onClick={async () => {
-                      const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
-                      const studentId = s.id;
-                      const examId = exam.id;
-
-                      const logs = await fetchStudentLogs(studentId, classroomId, examId);
-
-                      setSelectedLog({
-                        ...s,
-                        logs: logs,
-                      });
+                      const classroomId = JSON.parse(
+                        sessionStorage.getItem(
+                          "selectedLecture"
+                        )
+                      )?.id;
+                      const logs = await fetchStudentLogs(
+                        s.id,
+                        classroomId,
+                        exam.id
+                      );
+                      setSelectedLog({ ...s, logs });
                       setLogFilter("all");
                     }}
                   >
                     보기
                   </button>
                 </td>
-
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* 시험지 미리보기 팝업 */}
+        {/* 시험지 미리보기 */}
         {showExamModal && (
           <ExamViewerModal
             onClose={() => setShowExamModal(false)}
@@ -320,86 +283,52 @@ export const ProctoringPage = () => {
               </div>
 
               {/* 로그 필터 */}
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  marginBottom: "12px",
-                }}
-              >
+              <div className="log-filter-group">
                 <button
-                  className="submit-btn"
+                  className={`log-filter-btn ${
+                    logFilter === "all"
+                      ? "active"
+                      : "inactive"
+                  }`}
                   onClick={() => setLogFilter("all")}
-                  style={{
-                    backgroundColor:
-                      logFilter === "all"
-                        ? "#1a2a3a"
-                        : "#ccc",
-                  }}
                 >
                   전체 보기
                 </button>
                 <button
-                  className="submit-btn"
+                  className={`log-filter-btn ${
+                    logFilter === "warn"
+                      ? "active"
+                      : "inactive"
+                  }`}
                   onClick={() => setLogFilter("warn")}
-                  style={{
-                    backgroundColor:
-                      logFilter === "warn"
-                        ? "#1a2a3a"
-                        : "#ccc",
-                  }}
                 >
                   비정상 로그만
                 </button>
               </div>
 
               {/* 로그 테이블 */}
-              <div
-                style={{
-                  maxHeight: "300px",
-                  overflowY: "auto",
-                }}
-              >
-                <table
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                  }}
-                >
+              <div className="modal-log-scroll">
+                <table className="modal-log-table">
                   <tbody>
                     {filteredLogList.map((log, idx) => (
                       <tr key={idx}>
-                        <td style={{ width: "32px" }}>
-                          <span
-                            style={{
-                              display: "inline-block",
-                              width: 10,
-                              height: 10,
-                              borderRadius: "50%",
-                              backgroundColor: "black",
-                            }}
-                          ></span>
+                        <td>
+                          <span className="log-dot" />
                         </td>
-                        <td
-                          style={{
-                            width: "80px",
-                            fontFamily: "monospace",
-                          }}
-                        >
+                        <td className="time-cell">
                           {log.time}
                         </td>
-                        <td>
-                          <span
-                            style={{
-                              color: getLogColor(log.type),
-                              fontWeight:
-                                log.type === "warn"
-                                  ? "bold"
-                                  : "normal",
-                            }}
-                          >
-                            {log.message}
-                          </span>
+                        <td
+                          className="log-message"
+                          style={{
+                            color: getLogColor(log.type),
+                            fontWeight:
+                              log.type === "warn"
+                                ? "bold"
+                                : "normal",
+                          }}
+                        >
+                          {log.message}
                         </td>
                       </tr>
                     ))}
@@ -407,13 +336,7 @@ export const ProctoringPage = () => {
                 </table>
               </div>
 
-              <div
-                className="delete-buttons"
-                style={{
-                  justifyContent: "right",
-                  marginTop: "20px",
-                }}
-              >
+              <div className="delete-buttons center">
                 <button
                   className="submit-btn"
                   onClick={() => setSelectedLog(null)}
