@@ -16,4 +16,20 @@ export default defineConfig({
       },
     },
   },
+
+  server: {
+    proxy: {
+      "/ws": {
+        target: "http://::8080",
+        ws: true,
+      },
+      "/api": {
+        target: "http://:8080",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+=======
+
 });

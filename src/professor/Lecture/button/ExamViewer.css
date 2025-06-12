@@ -1,22 +1,23 @@
+/* ExamViewer.css */
 .exam-wrapper {
   background: #f4f6f9;
   width: 100%;
-  min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 40px 0;
+  padding: 0;
 }
 
 .exam-panels {
   display: flex;
-  max-width: 960px;
+  flex-direction: column;
   width: 100%;
   gap: 24px;
   padding: 0 24px;
+  align-items: center;
 }
 
 .left-panel {
-  flex: 1;
+  width: 100%;
   background: #fff;
   padding: 24px;
   border-radius: 12px;
@@ -27,8 +28,9 @@
   border: 1px solid #ccc;
   border-radius: 12px;
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   background-color: #fff;
+  text-align: left;
 }
 
 .question-box h4 {
@@ -48,6 +50,11 @@
   align-items: center;
   font-size: 16px;
   gap: 10px;
+  cursor: default;
+}
+
+.options input[type="radio"]:disabled {
+  accent-color: #1a2a3a;
 }
 
 textarea {
@@ -64,15 +71,18 @@ textarea {
 .answer-sheet {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
   justify-content: center;
-  padding-top: 16px;
+  background: #f9f9f9;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 
 .num-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
   border: 1px solid #aaa;
   background: #eee;
   font-weight: bold;
@@ -83,4 +93,5 @@ textarea {
 .num-btn.active {
   background: #1a2a3a;
   color: white;
+  border-color: #1a2a3a;
 }

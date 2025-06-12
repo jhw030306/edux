@@ -57,7 +57,6 @@ export default function ExamResult() {
     <MainLayout>
       <div className="exam-page-container">
         <div className="left-panel">
-          <h2>시험 결과 확인</h2>
           {answers.map((q, idx) => {
             const {
               questionId,
