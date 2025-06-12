@@ -14,6 +14,7 @@ import ExamEditor from "./professor/Exam/ExamEditor";
 import ExamReady from "./student/Exam/ExamReady";
 import ExamOff from "./student/Exam/ExamOff";
 import ExamOn from "./student/Exam/ExamOn";
+import ExamResult from "./student/Exam/ExamResult";
 import ExamFinish from "./student/Exam/ExamFinish";
 import { ProctoringPage } from "./professor/Lecture/button/ProctoringPage";
 import { StudentList } from "./professor/Lecture/button/StudentList";
@@ -65,6 +66,7 @@ function App() {
         path="/gradingstudent"
         element={<GradingStudent />}
       />
+      <Route path="/examresult" element={<ExamResult />} />
     </Routes>
   );
 }
