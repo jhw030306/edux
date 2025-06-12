@@ -1,44 +1,55 @@
-import React, { useEffect, useState, useCallback,useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamTakingLayout.css";
 import axios from "axios";
-import debounce from "lodash.debounce"
+import debounce from "lodash.debounce";
 
 const ExamOn = () => {
   const navigate = useNavigate();
   const { search } = useLocation();
-  const examId = Number(new URLSearchParams(search).get("examId"));
-  const studentId = Number(sessionStorage.getItem("studentId"));
-  const studentLoginId = sessionStorage.getItem("studentLoginId");
+  const examId = Number(
+    new URLSearchParams(search).get("examId")
+  );
+  const studentId = Number(
+    sessionStorage.getItem("studentId")
+  );
+  const studentLoginId = sessionStorage.getItem(
+    "studentLoginId"
+  );
   const location = useLocation();
 
   const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers]     = useState({});
+  const [answers, setAnswers] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [timeLeft, setTimeLeft]   = useState(null);
+  const [timeLeft, setTimeLeft] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [forbiddenKeys, setForbiddenKeys] = useState([]);
-  const [showFocusAlert, setShowFocusAlert] = useState(false);
+  const [showFocusAlert, setShowFocusAlert] =
+    useState(false);
   const [showKeyAlert, setShowKeyAlert] = useState(false);
-  const [keyAlertMessage, setKeyAlertMessage] = useState("");
+  const [keyAlertMessage, setKeyAlertMessage] =
+    useState("");
   const alreadyHandledRef = useRef(false);
 
-
-    // 최초 한 번만 JSON 파일에서 키 목록 불러오기
-    useEffect(() => {
-      fetch("/forbiddenKeys.json")
-        .then((res) => res.json())
-        .then((data) => {
-          setForbiddenKeys(data);
-          console.log("📥 금지 키 불러옴:", data);
-        })
-        .catch((err) => {
-          console.error("금지 키 불러오기 실패:", err);
-        });
-    }, []);
-
+  // 최초 한 번만 JSON 파일에서 키 목록 불러오기
+  useEffect(() => {
+    fetch("/forbiddenKeys.json")
+      .then((res) => res.json())
+      .then((data) => {
+        setForbiddenKeys(data);
+        console.log("📥 금지 키 불러옴:", data);
+      })
+      .catch((err) => {
+        console.error("금지 키 불러오기 실패:", err);
+      });
+  }, []);
 
   //금지키
   useEffect(() => {
@@ -56,17 +67,18 @@ const ExamOn = () => {
 
       if (matched) {
         e.preventDefault();
-        setKeyAlertMessage(`금지된 키 입력입니다: ${matched.label}`);
+        setKeyAlertMessage(
+          `금지된 키 입력입니다: ${matched.label}`
+        );
         setShowKeyAlert(true);
         sendCheatLog(`금지 키 입력: ${matched.key}`);
       }
-
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () =>
+      window.removeEventListener("keydown", handleKeyDown);
   }, [forbiddenKeys, examId, studentLoginId]);
-
 
   //창 전환 감지
   useEffect(() => {
@@ -83,16 +95,24 @@ const ExamOn = () => {
         alreadyHandledRef.current = true;
 
         setShowFocusAlert(true);
-        sendCheatLog("시험 창 탭 전환 또는 창 숨김 감지 이탈");
+        sendCheatLog(
+          "시험 창 탭 전환 또는 창 숨김 감지 이탈"
+        );
       }
     };
 
     window.addEventListener("blur", handleBlur);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
 
     return () => {
       window.removeEventListener("blur", handleBlur);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
     };
   }, [examId, studentLoginId]);
 
@@ -104,43 +124,58 @@ const ExamOn = () => {
       const outRight = e.clientX >= window.innerWidth;
       const outBottom = e.clientY >= window.innerHeight;
 
-      if ((outTop || outLeft || outRight || outBottom) && !alreadyHandledRef.current) {
+      if (
+        (outTop || outLeft || outRight || outBottom) &&
+        !alreadyHandledRef.current
+      ) {
         alreadyHandledRef.current = true;
         setShowFocusAlert(true);
         sendCheatLog("마우스가 창 밖으로 벗어남");
       }
     };
 
-    document.addEventListener("mouseleave", handleMouseLeave);
+    document.addEventListener(
+      "mouseleave",
+      handleMouseLeave
+    );
     return () => {
-      document.removeEventListener("mouseleave", handleMouseLeave);
+      document.removeEventListener(
+        "mouseleave",
+        handleMouseLeave
+      );
     };
   }, []);
 
-
   //로그 전송용용
   const sendCheatLog = (detail) => {
-    const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
+    const classroomId = JSON.parse(
+      sessionStorage.getItem("selectedLecture")
+    )?.id;
     if (!classroomId) return;
 
-    axios.post("/api/logs/cheat", {
-      studentId: studentLoginId.toString(),
-      timestamp: getKSTTimeString(),
-      classroomId: classroomId.toString(),
-      examId: examId.toString(),
-      detail: detail
-    }).then(() => {
-      console.log("[LOG] 부정행위 로그 전송 완료:", detail);
-    }).catch((err) => {
-      console.error("[LOG] 부정행위 로그 전송 실패:", err);
-    });
+    axios
+      .post("/api/logs/cheat", {
+        studentId: studentLoginId.toString(),
+        timestamp: getKSTTimeString(),
+        classroomId: classroomId.toString(),
+        examId: examId.toString(),
+        detail: detail,
+      })
+      .then(() => {
+        console.log(
+          "[LOG] 부정행위 로그 전송 완료:",
+          detail
+        );
+      })
+      .catch((err) => {
+        console.error(
+          "[LOG] 부정행위 로그 전송 실패:",
+          err
+        );
+      });
   };
 
-
-
-
-
-// 시간 포맷 (초 → MM:SS)
+  // 시간 포맷 (초 → MM:SS)
   const formatTime = (sec) => {
     if (sec == null) return "--:--";
     const m = String(Math.floor(sec / 60)).padStart(2, "0");
@@ -150,72 +185,81 @@ const ExamOn = () => {
 
   //한국 시간
   const getKSTTimeString = () => {
-  const now = new Date();
-  const offset = now.getTime() + 9 * 60 * 60 * 1000;
-  return new Date(offset).toISOString().slice(0, 19);
-};
-
+    const now = new Date();
+    const offset = now.getTime() + 9 * 60 * 60 * 1000;
+    return new Date(offset).toISOString().slice(0, 19);
+  };
 
   useEffect(() => {
-  const script = document.createElement("script");
-  script.src = "https://cse.google.com/cse.js?cx=950d9d6628e044643";
-  script.async = true;
-  document.body.appendChild(script);
+    const script = document.createElement("script");
+    script.src =
+      "https://cse.google.com/cse.js?cx=950d9d6628e044643";
+    script.async = true;
+    document.body.appendChild(script);
 
-  // 검색창이 다시 렌더링 되도록 기존 내용 제거 (없어도 되긴 함)
-  return () => {
-    document.body.removeChild(script);
-  };
-}, []);
-
+    // 검색창이 다시 렌더링 되도록 기존 내용 제거 (없어도 되긴 함)
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   useEffect(() => {
     if (!examId || !studentId) return;
 
     // 1) 제한시간
     // 남은 시간 API 호출
-    axios.get("/api/logs/remaining-time", {
-      params: {
-        studentId,
-        examInfoId: examId
-      }
-    })
-      .then(res => {
+    axios
+      .get("/api/logs/remaining-time", {
+        params: {
+          studentId,
+          examInfoId: examId,
+        },
+      })
+      .then((res) => {
         setTimeLeft(res.data); // 초 단위로 받아옴
         console.log("🕒 남은 시간 설정됨:", res.data);
       })
-      .catch(err => console.error("남은 시간 가져오기 실패:", err));
-
+      .catch((err) =>
+        console.error("남은 시간 가져오기 실패:", err)
+      );
 
     // 2) 문제
-    axios.get(`/api/exam-questions/exam/${examId}`)
-      .then(res => {
-        const sorted = res.data.sort((a, b) => a.number - b.number);
+    axios
+      .get(`/api/exam-questions/exam/${examId}`)
+      .then((res) => {
+        const sorted = res.data.sort(
+          (a, b) => a.number - b.number
+        );
         setQuestions(sorted);
-        setTotalCount(sorted.length);  // 여기서 전체 개수를 세팅
+        setTotalCount(sorted.length); // 여기서 전체 개수를 세팅
       })
-      .catch(err => console.error("문제 로드 실패:", err));
+      .catch((err) =>
+        console.error("문제 로드 실패:", err)
+      );
 
     // 3) 저장된 답안
     axios
       .get("/api/exam-result/answers", {
-        params: { examId, userId: studentId }
+        params: { examId, userId: studentId },
       })
-      .then(res => {
+      .then((res) => {
         const init = {};
-        res.data.forEach(item => {
+        res.data.forEach((item) => {
           const ua = item.userAnswer;
           // 주관식 빈 문자열은 무응답으로 처리
-          if (typeof ua === "string" && ua.trim() === "") return;
+          if (typeof ua === "string" && ua.trim() === "")
+            return;
           // 객관식 숫자형 문자열은 Number로
-          init[item.examQuestionId] =
-            /^[0-9]+$/.test(ua) ? Number(ua) : ua;
+          init[item.examQuestionId] = /^[0-9]+$/.test(ua)
+            ? Number(ua)
+            : ua;
         });
         setAnswers(init);
       })
-      .catch(err => console.error("답안 로드 실패:", err));
+      .catch((err) =>
+        console.error("답안 로드 실패:", err)
+      );
   }, [examId, studentId]);
-
 
   // ────────────────────────────────────────────────────────
   // B) 타이머: timeLeft 세팅되면 1초마다 감소
@@ -223,7 +267,7 @@ const ExamOn = () => {
   useEffect(() => {
     if (timeLeft == null) return;
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
           setShowModal(true);
@@ -237,8 +281,12 @@ const ExamOn = () => {
 
   useEffect(() => {
     const handleExit = () => {
-      const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
-      const studentId = sessionStorage.getItem("studentLoginid");
+      const classroomId = JSON.parse(
+        sessionStorage.getItem("selectedLecture")
+      )?.id;
+      const studentId = sessionStorage.getItem(
+        "studentLoginid"
+      );
 
       if (!studentId || !classroomId || !examId) return; // 데이터 없을 때 방지
 
@@ -261,15 +309,13 @@ const ExamOn = () => {
     window.addEventListener("popstate", handleExit);
 
     return () => {
-      window.removeEventListener("beforeunload", handleExit);
+      window.removeEventListener(
+        "beforeunload",
+        handleExit
+      );
       window.removeEventListener("popstate", handleExit);
     };
   }, []); // ✅ 의존성 제거해서 컴포넌트 마운트 시 한 번만 실행
-
-  const goToAnotherPage = () => {
-    logExamExit();  // 직접 로그 함수 호출
-    navigate("/somewhere");
-  };
 
   // 자동 저장 (debounce)
   const saveOne = useCallback(
@@ -281,15 +327,17 @@ const ExamOn = () => {
           examQuestionId: qId,
           userAnswer: ans,
         })
-        .catch(e => console.error("Draft 저장 실패:", e));
+        .catch((e) => console.error("Draft 저장 실패:", e));
     }, 500),
     [examId, studentId]
   );
 
   //시험 제출 및 저장시 로그 기록
   const logExamAction = async (type) => {
-    const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
-    
+    const classroomId = JSON.parse(
+      sessionStorage.getItem("selectedLecture")
+    )?.id;
+
     const url =
       type === "TEMP"
         ? "/api/logs/temporary-storage"
@@ -300,20 +348,27 @@ const ExamOn = () => {
         studentId: studentLoginId.toString(), // ✅ 문자열로 변환
         timestamp: getKSTTimeString(), // ✅ UTC가 아니라 KST
         classroomId: classroomId.toString(), // ✅ 꼭 문자열
-        examId: examId.toString()
+        examId: examId.toString(),
       });
 
-      console.log(`[LOG] ${type === "TEMP" ? "임시 저장" : "시험 제출"} 로그 전송 완료`);
+      console.log(
+        `[LOG] ${
+          type === "TEMP" ? "임시 저장" : "시험 제출"
+        } 로그 전송 완료`
+      );
     } catch (err) {
-      console.error(`[LOG] ${type === "TEMP" ? "임시 저장" : "시험 제출"} 로그 실패`, err);
+      console.error(
+        `[LOG] ${
+          type === "TEMP" ? "임시 저장" : "시험 제출"
+        } 로그 실패`,
+        err
+      );
     }
   };
 
-
-
   // 답안 선택/입력 처리
   const handleAnswer = (qId, val) => {
-    setAnswers(prev => {
+    setAnswers((prev) => {
       const next = { ...prev };
       // 주관식 빈 문자열이면 삭제 → 무응답 처리
       if (typeof val === "string" && val.trim() === "") {
@@ -326,7 +381,6 @@ const ExamOn = () => {
     });
   };
 
-
   // 임시 저장 (batch)
   const handleTempSave = async () => {
     saveOne.flush();
@@ -338,12 +392,14 @@ const ExamOn = () => {
           examQuestionId: qid.toString(),
           userAnswer: ans.toString(),
         }))
-        .filter(a => a.userAnswer !== "")
+        .filter((a) => a.userAnswer !== ""),
     };
-    await axios.post("/api/exam-result/save/multiple", payload);
+    await axios.post(
+      "/api/exam-result/save/multiple",
+      payload
+    );
     await logExamAction("TEMP"); // ✅ 임시 저장 로그 남기기
   };
-
 
   // 최종 제출
   const confirmSubmit = async () => {
@@ -352,13 +408,12 @@ const ExamOn = () => {
     navigate("/examfinish");
   };
 
-
   // 미응답 개수 계산
   const unansweredCount = questions.reduce((cnt, q) => {
     return answers[q.id] === undefined ? cnt + 1 : cnt;
   }, 0);
 
-   // 현재 문제
+  // 현재 문제
   const currentQuestion = questions[currentIndex] || {};
 
   return (
@@ -366,7 +421,6 @@ const ExamOn = () => {
       <div className="exam-wrapper exam-on-layout">
         {/* 인터넷 패널 */}
         <div className="internet-panel">
-
           <div className="gcse-search"></div>
         </div>
 
@@ -376,12 +430,18 @@ const ExamOn = () => {
             <div className="timer-box">
               남은 시간: {formatTime(timeLeft)}
             </div>
-            <button className="submit-btn" 
-            onClick={handleTempSave}>
-              임시 저장</button>
-             <button className="submit-btn" 
-             onClick={() => setShowModal(true)}>
-              제출</button>
+            <button
+              className="submit-btn"
+              onClick={handleTempSave}
+            >
+              임시 저장
+            </button>
+            <button
+              className="submit-btn"
+              onClick={() => setShowModal(true)}
+            >
+              제출
+            </button>
           </div>
 
           <div className="question-box">
@@ -428,9 +488,15 @@ const ExamOn = () => {
                         <input
                           type="radio"
                           name={`q-${currentQuestion.id}`}
-                          checked={answers[currentQuestion.id] === opt}
+                          checked={
+                            answers[currentQuestion.id] ===
+                            opt
+                          }
                           onChange={() =>
-                            handleAnswer(currentQuestion.id, opt)
+                            handleAnswer(
+                              currentQuestion.id,
+                              opt
+                            )
                           }
                         />
                         {opt}
@@ -515,7 +581,9 @@ const ExamOn = () => {
         <div className="modal">
           <div className="modal-box">
             <h2>⚠ 창 이탈 감지</h2>
-            <p>시험 중에는 다른 창으로 이동할 수 없습니다.</p>
+            <p>
+              시험 중에는 다른 창으로 이동할 수 없습니다.
+            </p>
             <div className="delete-buttons">
               <button
                 className="submit-btn"
@@ -549,10 +617,7 @@ const ExamOn = () => {
           </div>
         </div>
       )}
-
-
     </MainLayout>
-    
   );
 };
 

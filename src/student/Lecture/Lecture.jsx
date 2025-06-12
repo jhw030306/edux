@@ -40,6 +40,10 @@ export const StuLecture = () => {
     navigate(`/examready?examId=${exam.id}`);
   };
 
+  const handleViewResult = (exam) => {
+    navigate(`/examresult?examId=${exam.id}`);
+  };
+
   return (
     <MainLayout>
       <div className="page-content">
@@ -55,7 +59,10 @@ export const StuLecture = () => {
               >
                 시험 응시
               </button>
-              <button className="action-button">
+              <button
+                className="action-button"
+                onClick={() => handleViewResult(exam)}
+              >
                 시험 결과
               </button>
             </div>
