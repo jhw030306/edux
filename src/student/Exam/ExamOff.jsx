@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamTakingLayout.css"; // 기존 공통 스타일 포함
-import axios from "axios";
+import api from "../../api/axios";
 import debounce from "lodash.debounce";
 
 const ExamOff = () => {
@@ -32,8 +32,8 @@ const ExamOff = () => {
     if (!examId || !studentId) return;
     
     // 시험 제한 시간(duration) 불러오기
-    axios
-      .get(`/api/exams/${examId}`)
+    api
+      .get(`/exams/${examId}`)
       .then((res) => {
         const durMin = res.data.duration ?? 60;       // 서버에서 내려온 분 단위
         setTimeLeft(durMin * 60);                     // 초 단위로 변환
@@ -41,14 +41,14 @@ const ExamOff = () => {
       .catch((e) => console.error("제한 시간 불러오기 실패:", e));
 
     // 문제만 
-    axios
-      .get(`/api/exam-questions/exam/${examId}`)
+    api
+      .get(`/exam-questions/exam/${examId}`)
       .then((res) => setQuestions(res.data.sort((a, b) => a.number - b.number)))
       .catch((e) => console.error("문제 불러오기 실패:", e));
 
     // 저장된 학생 답안만
-    axios
-    .get("/api/exam-result/answers", { params: { examId, userId: studentId } })
+    api
+    .get("/exam-result/answers", { params: { examId, userId: studentId } })
     .then((res) => {
       const init = {};
       res.data.forEach((item) => {
@@ -88,7 +88,7 @@ useEffect(() => {
   // 자동 저장 (debounced)
   const saveOne = useCallback(
     debounce((qId, ans) => {
-      axios.post("/api/exam-result/save", {
+      api.post("/exam-result/save", {
         examId,
         userId: studentId,
         examQuestionId: qId,
@@ -125,7 +125,7 @@ useEffect(() => {
      }))
      .filter(a => a.userAnswer !== ""),     // 빈 답안은 보내지 않아도 좋습니다
  };
- await axios.post("/api/exam-result/save/multiple", payload);
+ await api.post("/exam-result/save/multiple", payload);
 };
 
   // 4) 최종 제출

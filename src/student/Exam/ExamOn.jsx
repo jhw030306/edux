@@ -7,8 +7,8 @@ import React, {
 import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamTakingLayout.css";
-import axios from "axios";
-import debounce from "lodash.debounce";
+import api from "../../api/axios";
+import debounce from "lodash.debounce"
 
 const ExamOn = () => {
   const navigate = useNavigate();
@@ -153,26 +153,19 @@ const ExamOn = () => {
     )?.id;
     if (!classroomId) return;
 
-    axios
-      .post("/api/logs/cheat", {
-        studentId: studentLoginId.toString(),
-        timestamp: getKSTTimeString(),
-        classroomId: classroomId.toString(),
-        examId: examId.toString(),
-        detail: detail,
-      })
-      .then(() => {
-        console.log(
-          "[LOG] 부정행위 로그 전송 완료:",
-          detail
-        );
-      })
-      .catch((err) => {
-        console.error(
-          "[LOG] 부정행위 로그 전송 실패:",
-          err
-        );
-      });
+
+    api.post("/logs/cheat", {
+      studentId: studentLoginId.toString(),
+      timestamp: getKSTTimeString(),
+      classroomId: classroomId.toString(),
+      examId: examId.toString(),
+      detail: detail
+    }).then(() => {
+      console.log("[LOG] 부정행위 로그 전송 완료:", detail);
+    }).catch((err) => {
+      console.error("[LOG] 부정행위 로그 전송 실패:", err);
+    });
+
   };
 
   // 시간 포맷 (초 → MM:SS)
@@ -207,15 +200,14 @@ const ExamOn = () => {
     if (!examId || !studentId) return;
 
     // 1) 제한시간
-    // 남은 시간 API 호출
-    axios
-      .get("/api/logs/remaining-time", {
-        params: {
-          studentId,
-          examInfoId: examId,
-        },
-      })
-      .then((res) => {
+
+    api.get("/logs/remaining-time", {
+      params: {
+        studentId,
+        examInfoId: examId
+      }
+    })
+      .then(res => {
         setTimeLeft(res.data); // 초 단위로 받아옴
         console.log("🕒 남은 시간 설정됨:", res.data);
       })
@@ -224,12 +216,11 @@ const ExamOn = () => {
       );
 
     // 2) 문제
-    axios
-      .get(`/api/exam-questions/exam/${examId}`)
-      .then((res) => {
-        const sorted = res.data.sort(
-          (a, b) => a.number - b.number
-        );
+
+    api.get(`/exam-questions/exam/${examId}`)
+      .then(res => {
+        const sorted = res.data.sort((a, b) => a.number - b.number);
+
         setQuestions(sorted);
         setTotalCount(sorted.length); // 여기서 전체 개수를 세팅
       })
@@ -238,9 +229,11 @@ const ExamOn = () => {
       );
 
     // 3) 저장된 답안
-    axios
-      .get("/api/exam-result/answers", {
-        params: { examId, userId: studentId },
+
+    api
+      .get("/exam-result/answers", {
+        params: { examId, userId: studentId }
+
       })
       .then((res) => {
         const init = {};
@@ -281,12 +274,9 @@ const ExamOn = () => {
 
   useEffect(() => {
     const handleExit = () => {
-      const classroomId = JSON.parse(
-        sessionStorage.getItem("selectedLecture")
-      )?.id;
-      const studentId = sessionStorage.getItem(
-        "studentLoginid"
-      );
+      const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
+      const studentId = sessionStorage.getItem("studentLoginId");
+
 
       if (!studentId || !classroomId || !examId) return; // 데이터 없을 때 방지
 
@@ -320,8 +310,8 @@ const ExamOn = () => {
   // 자동 저장 (debounce)
   const saveOne = useCallback(
     debounce((qId, ans) => {
-      axios
-        .post("/api/exam-result/save", {
+      api
+        .post("/exam-result/save", {
           examId,
           userId: studentId,
           examQuestionId: qId,
@@ -344,7 +334,7 @@ const ExamOn = () => {
         : "/api/logs/submit-exam";
 
     try {
-      await axios.post(url, {
+      await api.post(url, {
         studentId: studentLoginId.toString(), // ✅ 문자열로 변환
         timestamp: getKSTTimeString(), // ✅ UTC가 아니라 KST
         classroomId: classroomId.toString(), // ✅ 꼭 문자열
@@ -394,10 +384,8 @@ const ExamOn = () => {
         }))
         .filter((a) => a.userAnswer !== ""),
     };
-    await axios.post(
-      "/api/exam-result/save/multiple",
-      payload
-    );
+
+    await api.post("/exam-result/save/multiple", payload);
     await logExamAction("TEMP"); // ✅ 임시 저장 로그 남기기
   };
 

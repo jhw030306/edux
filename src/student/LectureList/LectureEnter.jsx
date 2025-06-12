@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../api/axios";
 
 export const LectureEnter = ({ onSubmit, onClose }) => {
   const [code, setCode] = useState("");
@@ -19,8 +19,8 @@ export const LectureEnter = ({ onSubmit, onClose }) => {
     );
 
     try {
-      const { data } = await axios.post(
-        "/api/student-classrooms/join-classroom",
+      const { data } = await api.post(
+        "/student-classrooms/join-classroom",
         {
           accessCode: code.trim(),
           studentId: studentLoginId,

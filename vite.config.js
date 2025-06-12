@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
+  base: "/", //배포용
   plugins: [react()],
   resolve: {
     alias: {
@@ -15,6 +16,7 @@ export default defineConfig({
       },
     },
   },
+
   server: {
     proxy: {
       "/ws": {
@@ -28,4 +30,6 @@ export default defineConfig({
       },
     },
   },
+=======
+
 });

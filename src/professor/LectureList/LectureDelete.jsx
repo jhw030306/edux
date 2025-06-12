@@ -1,9 +1,9 @@
-import axios from "axios";
+import api from "../../api/axios";
 
 export const LectureDelete = ({ lecture, onConfirm, onCancel }) => {
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/classrooms/${lecture.id}`);
+      await api.delete(`/classrooms/${lecture.id}`);
       alert("강의실이 삭제되었습니다.");
       onConfirm(); // 프론트 목록에서 삭제 반영
     } catch (error) {

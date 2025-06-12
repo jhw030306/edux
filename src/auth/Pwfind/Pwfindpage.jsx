@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Pwfindpage.css";
-import axios from "axios";
+import api from "../../api/axios";
 
 export const Pwfindpage = () => {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ export const Pwfindpage = () => {
 
   try {
     // 1. 학생 API 먼저 시도
-    await axios.get("/api/students/verify-password-reset", {
+    await api.get("/students/verify-password-reset", {
       params: {
         studentId: inputId,
         email: inputEmail,
@@ -61,7 +61,7 @@ export const Pwfindpage = () => {
   } catch (studentErr) {
     try {
       // 2. 교수 API 시도
-      await axios.get("/api/professors/verify-password-reset", {
+      await api.get("/professors/verify-password-reset", {
         params: {
           username: inputId,
           email: inputEmail,
