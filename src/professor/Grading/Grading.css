@@ -65,7 +65,7 @@
 .view-btn:disabled {
   background-color: #ccc;
   color: #888;
-  cursor: not-allowed;
+  cursor: default;
   border: 1px solid #aaa;
 }
 
