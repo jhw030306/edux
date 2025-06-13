@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./Lecture.css";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 export const StuLecture = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -20,7 +22,7 @@ export const StuLecture = () => {
 
       try {
         const response = await fetch(
-          `/api/exams/examList?studentId=${studentLoginId}&classroomId=${_lecture.id}`
+          `${API_BASE}/exams/examList?studentId=${studentLoginId}&classroomId=${_lecture.id}`
         );
         const data = await response.json();
         setExams(data);

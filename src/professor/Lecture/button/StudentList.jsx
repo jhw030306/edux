@@ -3,6 +3,8 @@ import { MainLayout } from "../../../layout/MainLayout";
 import "./button.css";
 import * as XLSX from "xlsx/xlsx.mjs";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 export const StudentList = () => {
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,7 +43,7 @@ export const StudentList = () => {
         }
 
         const response = await fetch(
-          `/api/professor/student-classrooms/classroom/${classroomId}/students`
+          `${API_BASE}/professor/student-classrooms/classroom/${classroomId}/students`
         );
         if (!response.ok)
           throw new Error(
@@ -71,7 +73,7 @@ export const StudentList = () => {
 
     try {
       const response = await fetch(
-        `/api/professor/student-classrooms/classroom/${classroomId}/student/${studentId}`,
+        `${API_BASE}/professor/student-classrooms/classroom/${classroomId}/student/${studentId}`,
         { method: "DELETE" }
       );
 

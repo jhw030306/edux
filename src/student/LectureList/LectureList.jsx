@@ -4,6 +4,8 @@ import { LectureEnter } from "./LectureEnter";
 import { useNavigate } from "react-router-dom";
 import "./LectureList.css";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 export const StuLecturepage = () => {
   const navigate = useNavigate();
 
@@ -37,7 +39,7 @@ export const StuLecturepage = () => {
 
   // 전체 강의 목록 로드 함수
   const loadLectures = useCallback(() => {
-    fetch(`/api/student-classrooms/${studentLoginId}`)
+    fetch(`${API_BASE}/student-classrooms/${studentLoginId}`)
       .then((res) => {
         if (!res.ok) throw new Error("강의 목록 불러오기 실패");
         return res.json();
@@ -54,7 +56,7 @@ export const StuLecturepage = () => {
     }
     loadLectures();
 
-    fetch(`/api/students/${studentPk}`)
+    fetch(`${API_BASE}/students/${studentPk}`)
       .then((res) => {
         if (!res.ok) throw new Error("학생 정보 불러오기 실패");
         return res.json();
@@ -70,7 +72,7 @@ export const StuLecturepage = () => {
   }, [studentLoginId, studentPk, navigate, loadLectures]);
 
   const handleLogout = async () => {
-    await fetch("/api/students/logout", {
+    await fetch(`${API_BASE}/students/logout`, {
       method: "POST",
       credentials: "include",
     });

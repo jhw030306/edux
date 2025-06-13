@@ -4,6 +4,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamReady.css";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const ExamReady = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,7 +20,7 @@ const ExamReady = () => {
     if (!examId) return;
     const fetchExamInfo = async () => {
       try {
-        const res = await fetch(`/api/exams/${examId}`);
+        const res = await fetch(`${API_BASE}/exams/${examId}`);
         if (!res.ok) throw new Error("시험 정보 불러오기 실패");
         const data = await res.json();
         setExamInfo(data);
@@ -112,7 +114,7 @@ const ExamReady = () => {
                 const studentId = sessionStorage.getItem("studentLoginId");
                 const classroomId = JSON.parse(sessionStorage.getItem("selectedLecture"))?.id;
                 const res = await fetch(
-                  `/api/logs/exam-status?studentId=${studentId}&examInfoId=${examInfo.id}&classroomId=${classroomId}`
+                  `${API_BASE}/logs/exam-status?studentId=${studentId}&examInfoId=${examInfo.id}&classroomId=${classroomId}`
                 );
 
                 if (!res.ok) throw new Error("시험 상태 확인 실패");

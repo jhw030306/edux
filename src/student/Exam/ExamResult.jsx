@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
-import axios from "axios";
+import api from "../../api/axios";
 import "./ExamTakingLayout.css";
 
 export default function ExamResult() {
@@ -16,8 +16,8 @@ export default function ExamResult() {
   const [loading, setLoading] = useState(true);
 
   const fetchFull = async () => {
-    const { data: full } = await axios.get(
-      "/api/grading/full",
+    const { data: full } = await api.get(
+      "/grading/full",
       {
         params: { examId, studentId },
       }

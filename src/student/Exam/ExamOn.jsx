@@ -9,6 +9,7 @@ import { MainLayout } from "../../layout/MainLayout";
 import "./ExamTakingLayout.css";
 import api from "../../api/axios";
 import debounce from "lodash.debounce"
+import.meta.env.VITE_API_URL
 
 const ExamOn = () => {
   const navigate = useNavigate();
@@ -292,7 +293,7 @@ const ExamOn = () => {
       });
 
       console.log("📤 EXAM_EXIT 로그 전송 (페이지 이탈)");
-      navigator.sendBeacon("/api/logs/exit-exam", blob);
+      navigator.sendBeacon(`${import.meta.env.VITE_API_URL}/logs/exit-exam`, blob);
     };
 
     window.addEventListener("beforeunload", handleExit);
