@@ -7,6 +7,8 @@ import { Client } from "@stomp/stompjs";
 
 import "./button.css";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 export const ProctoringPage = () => {
   const location = useLocation();
   const exam = location.state?.exam;
@@ -80,7 +82,7 @@ export const ProctoringPage = () => {
     const fetchStudents = async () => {
       try {
         const response = await fetch(
-          `/api/logs/in-exam-status?examId=${examInfoId}&classroomId=${classroomId}`
+          `${API_BASE}/logs/in-exam-status?examId=${examInfoId}&classroomId=${classroomId}`
         );
         if (!response.ok)
           throw new Error("시험 상태 불러오기 실패");
@@ -118,7 +120,7 @@ export const ProctoringPage = () => {
   ) => {
     try {
       const res = await fetch(
-        `/api/logs/student-logs?studentId=${studentId}&classroomId=${classroomId}&examId=${examId}`
+        `${API_BASE}/logs/student-logs?studentId=${studentId}&classroomId=${classroomId}&examId=${examId}`
       );
       if (!res.ok) throw new Error("로그 불러오기 실패");
       const data = await res.json();

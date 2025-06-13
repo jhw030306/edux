@@ -7,6 +7,8 @@ import { MainLayout } from "../../layout/MainLayout";
 import "./ExamEditor.css";
 import api from "../../api/axios";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const ExamEditor = () => {
   const [activeTab, setActiveTab] = useState("settings");
   const [showSubmitModal, setShowSubmitModal] =
@@ -39,7 +41,7 @@ const ExamEditor = () => {
     // 1) 시험 기본 정보 불러오기
     const fetchExamInfo = async () => {
       try {
-        const res = await fetch(`/api/exams/${examId}`);
+        const res = await fetch(`${API_BASE}/exams/${examId}`);
         if (!res.ok)
           throw new Error("시험 정보 불러오기 실패");
         const data = await res.json();
@@ -183,7 +185,7 @@ const ExamEditor = () => {
       const selected = JSON.parse(
         sessionStorage.getItem("selectedExam")
       );
-      await fetch("/api/exams/update", {
+      await fetch('${API_BASE}/exams/update', {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "../../../layout/MainLayout";
 import "./button.css";
-import * as XLSX from "xlsx/xlsx.mjs";
+import * as XLSX from "xlsx";
+
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export const LogPage = () => {
   const [logs, setLogs] = useState([]);
@@ -55,7 +57,7 @@ export const LogPage = () => {
     const fetchLogs = async () => {
       try {
         const res = await fetch(
-          `/api/logs/in-exam-status?examId=${exam.id}&classroomId=${classroomId}`
+          `${API_BASE}/logs/in-exam-status?examId=${exam.id}&classroomId=${classroomId}`
         );
         if (!res.ok)
           throw new Error("시험 로그 목록 불러오기 실패");
@@ -66,7 +68,7 @@ export const LogPage = () => {
           data.map(async (s) => {
             try {
               const res = await fetch(
-                `/api/logs/student-logs?studentId=${s.studentId}&classroomId=${classroomId}&examId=${exam.id}`
+                `${API_BASE}/logs/student-logs?studentId=${s.studentId}&classroomId=${classroomId}&examId=${exam.id}`
               );
               if (!res.ok)
                 throw new Error("학생 로그 실패");

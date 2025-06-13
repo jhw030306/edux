@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./ExamViewer.css";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const ExamViewer = () => {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -13,7 +15,7 @@ const ExamViewer = () => {
     const fetchQuestions = async () => {
       try {
         const res = await fetch(
-          `/api/exam-questions/exam/all/${examId}`
+          `${API_BASE}/exam-questions/exam/all/${examId}`
         );
         const data = await res.json();
 

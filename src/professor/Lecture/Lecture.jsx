@@ -6,6 +6,8 @@ import { ExamDelete } from "./ExamDelete";
 import { useEffect } from "react";
 import "./Lecture.css";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 export const ProLecture = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,12 +72,12 @@ export const ProLecture = () => {
       );
       console.log(
         "불러오기 URL:",
-        `/api/exams/${professorId}/${classroomId}/list`
+        `${API_BASE}/exams/${professorId}/${classroomId}/list`
       );
 
       try {
         const res = await fetch(
-          `/api/exams/${professorId}/${classroomId}/list`
+          `${API_BASE}/exams/${professorId}/${classroomId}/list`
         );
         if (!res.ok)
           throw new Error("시험 목록 불러오기 실패");
@@ -107,7 +109,7 @@ export const ProLecture = () => {
     }
 
     try {
-      const res = await fetch(`/api/exams/create`, {
+      const res = await fetch(`${API_BASE}/exams/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -146,7 +148,7 @@ export const ProLecture = () => {
     });
 
     try {
-      const res = await fetch("/api/exams/update", {
+      const res = await fetch(`${API_BASE}/exams/update`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -193,7 +195,7 @@ export const ProLecture = () => {
     try {
       // 1) 서버에 삭제 요청
       const response = await fetch(
-        `/api/exams/delete/all/${deletedExam.id}`,
+        `${API_BASE}/exams/delete/all/${deletedExam.id}`,
         {
           method: "DELETE",
         }
