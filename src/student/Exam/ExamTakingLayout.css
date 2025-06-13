@@ -1,6 +1,5 @@
 /* 공통 */
 .exam-wrapper {
-  background: #f4f6f9;
   width: 100%;
   height: 100vh;
   box-sizing: border-box;
@@ -33,28 +32,45 @@
   background: #ffffff;
 }
 
-/* ✅ OFF 전용: 문제 우측, 답안 영역 포함 */
-.exam-panels {
+/* ✅ OFF 전용: 좌우 레이아웃 */
+.exam-off-layout {
   display: flex;
-  gap: 20px;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0;
-  padding: 2px;
+  flex-direction: row;
+  justify-content: center; /* 있어도 무방, 없어도 OK */
+  height: 100vh;
+  background: #ffffff;
+  overflow: hidden;
 }
 
+.exam-off-panels {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  background: #ffffff;
+
+  gap: 20px;
+  width: 100%;
+  margin: 0 auto; /* ✅ 브라우저 기준 가운데 정렬 */
+  padding: 24px;
+}
+
+/* 좌측 문제 영역 */
 .left-panel {
   flex: 2;
   background: #fff;
   padding: 24px;
+  max-width: 500px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+/* 우측 컨트롤 영역 */
 .right-panel {
   width: 260px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  background: #ffffff;
 }
 
 /* 공통 질문 영역 */
@@ -99,7 +115,7 @@ textarea {
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  background: #fafafa;
+  background: #ffffff;
   resize: vertical; /* 또는 none */
   box-sizing: border-box;
 }
@@ -225,11 +241,6 @@ textarea {
 .submit-btn:hover {
   background-color: #092b47;
 }
-.exam-off-layout {
-  display: flex;
-  justify-content: center;
-  padding: 40px 0;
-}
 
 .exam-panels {
   display: flex;
@@ -254,83 +265,4 @@ textarea {
   flex-direction: column;
   gap: 12px;
   align-items: stretch;
-}
-
-/* 상태 심볼 (○ △ ／) */
-.status-symbol {
-  position: absolute;
-  top: 0;
-  left: 0;
-  font-size: 3.5rem;
-  line-height: 1;
-  opacity: 0.8;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* 정답 ○ */
-.status-symbol.circle {
-  color: #2e7d32;
-}
-
-/* 부분점수 △ */
-.status-symbol.triangle {
-  color: #f9a825;
-}
-
-/* 오답 ／ */
-.status-symbol.slash {
-  color: #c62828;
-}
-
-/* 정답 표시 */
-.option-label.correct {
-  background-color: #e3f2fd;
-  color: #0d47a1;
-}
-
-/* 오답 표시 */
-.option-label.wrong {
-  background-color: #ffebee;
-  color: #d32f2f;
-  border: 1px solid #e57373;
-}
-
-/* 학생이 선택한 보기 강조 */
-.option-label.student {
-  font-weight: bold;
-}
-
-/* 주관식 텍스트 박스 */
-.subjective-answer-block {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-/* 점수 표시 (읽기 전용) */
-.score-input-row {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-}
-
-.score-input-row input {
-  width: 60px;
-  text-align: right;
-  background: #f3f3f3;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 4px 8px;
-}
-
-/* 로딩 텍스트 */
-.loading {
-  padding: 80px 0;
-  text-align: center;
-  font-size: 1.2rem;
-  color: #444;
 }

@@ -20,11 +20,11 @@ export default defineConfig({
   server: {
     proxy: {
       "/ws": {
-        target: "http://::8080",
+        target: "http://",
         ws: true,
       },
       "/api": {
-        target: "http://:8080",
+        target: "http://",
         changeOrigin: true,
         secure: false,
       },
