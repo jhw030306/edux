@@ -331,8 +331,8 @@ const ExamOn = () => {
 
     const url =
       type === "TEMP"
-        ? "/api/logs/temporary-storage"
-        : "/api/logs/submit-exam";
+        ? `${import.meta.env.VITE_API_URL}/logs/temporary-storage`
+        : `${import.meta.env.VITE_API_URL}/logs/submit-exam`;
 
     try {
       await api.post(url, {
