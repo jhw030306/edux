@@ -40,7 +40,7 @@ export const ProctoringPage = () => {
     }, 5000);
   };
 
-  useEffect(() => {
+    useEffect(() => {
     if (!exam?.id) return;
 
     const socket = new SockJS("/ws");
@@ -51,22 +51,20 @@ export const ProctoringPage = () => {
     });
 
     client.onConnect = () => {
-      client.subscribe(
-        `/topic/exam/${exam.id}`,
-        (message) => {
-          const data = JSON.parse(message.body);
-          const alertType = getAlertType(data.status);
-          addAlert(
-            `[${data.name}] ${data.status} - ${
-              data.detail || ""
-            }`,
-            alertType
-          );
-        }
-      );
+      client.subscribe(`/topic/exam/${exam.id}`, (message) => {
+        const data = JSON.parse(message.body);
+        console.log("📩 실시간 로그 수신:", data);
+
+        const alertType = getAlertType(data.status); // 타입 판단
+
+        // 👉 알림 + 상태 업데이트 등 처리
+        addAlert(`[${data.name}] ${data.status} - ${data.detail || ""}`, "warn");
+
+      });
     };
 
     client.activate();
+
     return () => {
       client.deactivate();
     };
