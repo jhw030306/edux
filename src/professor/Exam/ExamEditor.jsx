@@ -185,7 +185,7 @@ const ExamEditor = () => {
       const selected = JSON.parse(
         sessionStorage.getItem("selectedExam")
       );
-      await fetch('${API_BASE}/exams/update', {
+      await fetch(`${API_BASE}/exams/update`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
