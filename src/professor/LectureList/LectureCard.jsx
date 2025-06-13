@@ -35,7 +35,15 @@ export const LectureCard = ({
         </div>
       </div>
       <div className="card-body">
-        <p className="auth">인증코드 : {accessCode}</p>
+        <p
+          className="auth"
+          onClick={(e) => {
+            e.stopPropagation(); // ✅ card onClick 방지
+          }}
+        >
+          인증코드 : {accessCode}
+        </p>
+
         <div className="bottom-info">
           <span>{section}</span>
           <span>{schedule}</span>
