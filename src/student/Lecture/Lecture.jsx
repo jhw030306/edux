@@ -39,7 +39,7 @@ export const StuLecture = () => {
       "selectedExam",
       JSON.stringify(exam)
     );
-    navigate(`/examready?examId=${exam.id}`);
+    navigate(`/examconsent?examId=${exam.id}`);
   };
 
   const handleViewResult = (exam) => {
