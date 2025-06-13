@@ -20,7 +20,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/ws": {
-        target: "http://::8080",
+        target: "http://52.78.166.79:8080",
         ws: true,
       },
       "/api": {
