@@ -1,4 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MainLayout } from "../../layout/MainLayout";
 import "./ExamTakingLayout.css"; // 기존 공통 스타일 포함
@@ -8,17 +12,20 @@ import debounce from "lodash.debounce";
 const ExamOff = () => {
   const navigate = useNavigate();
   const { search } = useLocation();
-  const examId = Number(new URLSearchParams(search).get("examId"));
-  const studentId = Number(sessionStorage.getItem("studentId"));
+  const examId = Number(
+    new URLSearchParams(search).get("examId")
+  );
+  const studentId = Number(
+    sessionStorage.getItem("studentId")
+  );
 
   const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers] = useState({});      // { [questionId]: studentAnswer }
+  const [answers, setAnswers] = useState({}); // { [questionId]: studentAnswer }
   const [currentIndex, setCurrentIndex] = useState(0);
 
   //초기값 null로 두고 서버에서 받아온 duration으로 다시 세팅
-  const [timeLeft, setTimeLeft] = useState(null); 
+  const [timeLeft, setTimeLeft] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
 
   // 시간 포맷 함수 (초 → "MM:SS")
   const formatTime = (sec) => {
@@ -30,103 +37,116 @@ const ExamOff = () => {
   // 1) 문제 + 저장된 학생 답안 불러오기 & 타이머
   useEffect(() => {
     if (!examId || !studentId) return;
-    
+
     // 시험 제한 시간(duration) 불러오기
     api
       .get(`/exams/${examId}`)
       .then((res) => {
-        const durMin = res.data.duration ?? 60;       // 서버에서 내려온 분 단위
-        setTimeLeft(durMin * 60);                     // 초 단위로 변환
+        const durMin = res.data.duration ?? 60; // 서버에서 내려온 분 단위
+        setTimeLeft(durMin * 60); // 초 단위로 변환
       })
-      .catch((e) => console.error("제한 시간 불러오기 실패:", e));
+      .catch((e) =>
+        console.error("제한 시간 불러오기 실패:", e)
+      );
 
-    // 문제만 
+    // 문제만
     api
       .get(`/exam-questions/exam/${examId}`)
-      .then((res) => setQuestions(res.data.sort((a, b) => a.number - b.number)))
-      .catch((e) => console.error("문제 불러오기 실패:", e));
+      .then((res) =>
+        setQuestions(
+          res.data.sort((a, b) => a.number - b.number)
+        )
+      )
+      .catch((e) =>
+        console.error("문제 불러오기 실패:", e)
+      );
 
     // 저장된 학생 답안만
     api
-    .get("/exam-result/answers", { params: { examId, userId: studentId } })
-    .then((res) => {
-      const init = {};
-      res.data.forEach((item) => {
-        const ua = item.userAnswer;
-        // 주관식(userAnswer가 빈 문자열)이면 무응답 처리
-        if (typeof ua === "string" && ua.trim() === "") {
-          return;
+      .get("/exam-result/answers", {
+        params: { examId, userId: studentId },
+      })
+      .then((res) => {
+        const init = {};
+        res.data.forEach((item) => {
+          const ua = item.userAnswer;
+          // 주관식(userAnswer가 빈 문자열)이면 무응답 처리
+          if (typeof ua === "string" && ua.trim() === "") {
+            return;
+          }
+          // 객관식 숫자는 Number로 변환
+          init[item.examQuestionId] = /^[0-9]+$/.test(ua)
+            ? Number(ua)
+            : ua;
+        });
+        setAnswers(init);
+      })
+      .catch((e) =>
+        console.error("답안 불러오기 실패:", e)
+      );
+  }, [examId, studentId]);
+
+  //  타이머 전용: timeLeft가 null이 아니면 1초마다 감소
+  useEffect(() => {
+    if (timeLeft === null) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setShowModal(true);
+          return 0;
         }
-        // 객관식 숫자는 Number로 변환
-        init[item.examQuestionId] =
-          /^[0-9]+$/.test(ua) ? Number(ua) : ua;
+        return prev - 1;
       });
-      setAnswers(init);
-    })
-      .catch((e) => console.error("답안 불러오기 실패:", e));
-      }, [examId, studentId]);
+    }, 1000);
 
-    
-//  타이머 전용: timeLeft가 null이 아니면 1초마다 감소
-useEffect(() => {
-  if (timeLeft === null) return;
-
-  const timer = setInterval(() => {
-    setTimeLeft((prev) => {
-      if (prev <= 1) {
-        clearInterval(timer);
-        setShowModal(true);
-        return 0;
-      }
-      return prev - 1;
-    });
-  }, 1000);
-
-  return () => clearInterval(timer);
-}, [timeLeft]);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
 
   // 자동 저장 (debounced)
   const saveOne = useCallback(
     debounce((qId, ans) => {
-      api.post("/exam-result/save", {
-        examId,
-        userId: studentId,
-        examQuestionId: qId,
-        userAnswer: ans,
-      }).catch((e) => console.error("Draft 저장 실패:", e));
+      api
+        .post("/exam-result/save", {
+          examId,
+          userId: studentId,
+          examQuestionId: qId,
+          userAnswer: ans,
+        })
+        .catch((e) => console.error("Draft 저장 실패:", e));
     }, 500),
     [examId, studentId]
   );
 
-
   const handleAnswer = (qId, val) => {
-   setAnswers((prev) => {
-     const next = { ...prev };
-     // 주관식 textarea 가 비워지면 무응답 처리
-     if (typeof val === "string" && val.trim() === "") {
-       delete next[qId];
-     } else {
-       next[qId] = val;
-     }
-     saveOne(qId, val);
-     return next;
-   });
- };
+    setAnswers((prev) => {
+      const next = { ...prev };
+      // 주관식 textarea 가 비워지면 무응답 처리
+      if (typeof val === "string" && val.trim() === "") {
+        delete next[qId];
+      } else {
+        next[qId] = val;
+      }
+      saveOne(qId, val);
+      return next;
+    });
+  };
   // 3) 임시 저장 (batch)
   const handleTempSave = async () => {
     saveOne.flush();
     const payload = {
-   examId,
-   userId: studentId,
-   answers: Object.entries(answers)
-     .map(([qid, ans]) => ({
-       examQuestionId: qid.toString(),     // String 타입으로
-       userAnswer: ans.toString(),         // String 타입으로
-     }))
-     .filter(a => a.userAnswer !== ""),     // 빈 답안은 보내지 않아도 좋습니다
- };
- await api.post("/exam-result/save/multiple", payload);
-};
+      examId,
+      userId: studentId,
+      answers: Object.entries(answers)
+        .map(([qid, ans]) => ({
+          examQuestionId: qid.toString(), // String 타입으로
+          userAnswer: ans.toString(), // String 타입으로
+        }))
+        .filter((a) => a.userAnswer !== ""), // 빈 답안은 보내지 않아도 좋습니다
+    };
+    await api.post("/exam-result/save/multiple", payload);
+  };
 
   // 4) 최종 제출
   const confirmSubmit = async () => {
@@ -136,16 +156,16 @@ useEffect(() => {
 
   const currentQuestion = questions[currentIndex] || {};
   const unansweredCount = questions.reduce((cnt, q) => {
-   const a = answers[q.id];
-   // 숫자(0)이나 "O"/"X"도 valid, 빈 문자열·undefined만 무응답
-   if (a === undefined) return cnt + 1;
-   return cnt;
- }, 0);
+    const a = answers[q.id];
+    // 숫자(0)이나 "O"/"X"도 valid, 빈 문자열·undefined만 무응답
+    if (a === undefined) return cnt + 1;
+    return cnt;
+  }, 0);
 
   return (
     <MainLayout>
       <div className="exam-wrapper exam-off-layout">
-        <div className="exam-panels">
+        <div className="exam-off-panels">
           {/* 좌측 문제 영역 */}
           <div className="left-panel">
             {currentQuestion && (
@@ -192,7 +212,8 @@ useEffect(() => {
                           type="radio"
                           name={`q-${currentQuestion.id}`}
                           checked={
-                            answers[currentQuestion.id] === opt
+                            answers[currentQuestion.id] ===
+                            opt
                           }
                           onChange={() =>
                             handleAnswer(
@@ -231,10 +252,16 @@ useEffect(() => {
             <div className="timer-box">
               남은 시간: {formatTime(timeLeft)}
             </div>
-            <button className="submit-btn" onClick={handleTempSave}>
+            <button
+              className="submit-btn"
+              onClick={handleTempSave}
+            >
               임시 저장
             </button>
-            <button className="submit-btn" onClick={() => setShowModal(true)}>
+            <button
+              className="submit-btn"
+              onClick={() => setShowModal(true)}
+            >
               제출
             </button>
 
@@ -245,7 +272,9 @@ useEffect(() => {
                   className={`num-btn ${
                     idx === currentIndex ? "active" : ""
                   } ${
-                    answers[q.id] !== undefined ? "answered" : ""
+                    answers[q.id] !== undefined
+                      ? "answered"
+                      : ""
                   }`}
                   onClick={() => setCurrentIndex(idx)}
                 >
