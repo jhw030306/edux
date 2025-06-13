@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "./Signuppage.css";
 import { useNavigate } from "react-router-dom"; 
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const SignupStu = () => {
   const navigate = useNavigate(); 
   const [form, setForm] = useState({
@@ -83,7 +85,7 @@ const SignupStu = () => {
     }
   
     try {
-      const response = await fetch(`/api/students/check-id?studentId=${form.username}`, {
+      const response = await fetch(`${API_BASE}/students/check-id?studentId=${form.username}`, {
         method: "GET",
       });
   
@@ -155,7 +157,7 @@ const SignupStu = () => {
       return alert("이메일 인증을 완료해주세요.");
 
   try {
-    const response = await fetch("/api/students/register", {
+    const response = await fetch(`${API_BASE}/students/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
