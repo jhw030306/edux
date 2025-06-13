@@ -26,7 +26,8 @@ export const ProLecturepage = () => {
    const goToHome = () => {
     // 현재 "/"가 아니면 메인으로, 메인이면 새로고침
      if (window.location.pathname === "/prolecturelist") {
-       window.location.reload();
+      //  window.location.reload();
+      navigate(0);
     } else {
        navigate("/main");
      }
