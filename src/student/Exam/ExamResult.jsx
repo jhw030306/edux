@@ -14,6 +14,7 @@ export default function ExamResult() {
   );
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [gradingComplete, setGradingComplete] = useState(false);
 
   const fetchFull = async () => {
     const { data: full } = await api.get(
@@ -22,7 +23,14 @@ export default function ExamResult() {
         params: { examId, studentId },
       }
     );
-    setAnswers(full);
+    // 모든 문제의 isGrade가 1인지 확인
+    const complete = Array.isArray(full) && full.every((q) => q.isGrade === 1);
+    setGradingComplete(complete);
+
+    // 채점 완료된 경우에만 answers에 세팅
+    if (complete) {
+      setAnswers(full);
+    }
   };
 
   useEffect(() => {
@@ -40,6 +48,17 @@ export default function ExamResult() {
     return (
       <MainLayout>
         <div className="loading">결과 불러오는 중…</div>
+      </MainLayout>
+    );
+  }
+
+  // 채점이 완료되지 않은 경우
+  if (!gradingComplete) {
+    return (
+      <MainLayout>
+        <div className="not-graded-message">
+          채점이 완료되지 않았습니다.
+        </div>
       </MainLayout>
     );
   }
