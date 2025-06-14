@@ -11,6 +11,7 @@ export const LogPage = () => {
   const [selectedExam, setSelectedExam] = useState("");
   const [showOnlyCheat, setShowOnlyCheat] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
+
   const formatTime = (isoString) => {
     if (!isoString) return "-";
     const date = new Date(isoString);
@@ -29,11 +30,9 @@ export const LogPage = () => {
     const lecture = JSON.parse(
       sessionStorage.getItem("selectedLecture")
     );
-
     const fileName = `${lecture?.className ?? "강의명"}_${
       lecture?.section ?? "분반"
     }_로그목록`;
-
     const datas = filtered.length ? filtered : [];
     const worksheet = XLSX.utils.json_to_sheet(datas);
     const workbook = XLSX.utils.book_new();
@@ -44,6 +43,7 @@ export const LogPage = () => {
     );
     XLSX.writeFile(workbook, `${fileName}.xlsx`);
   };
+
   useEffect(() => {
     const exam = JSON.parse(
       sessionStorage.getItem("selectedExam")
@@ -89,17 +89,24 @@ export const LogPage = () => {
           })
         );
 
-        const formatted = data.map((s, i) => ({
-          id: s.studentId,
-          name: s.name,
-          studentNumber: s.studentNumber,
-          examTitle: exam.title,
-          cheatCount: s.cheatCount || 0,
-          time: `${s.enterTimeFormatted || "-"} ~ ${
-            s.exitTimeFormatted || "-"
-          }`,
-          logs: allLogs[i],
-        }));
+        const formatted = data
+          .map((s, i) => {
+            const logsForStudent = allLogs[i];
+
+            const cheatCount = logsForStudent.filter(
+              (log) => log.type === "warn"
+            ).length;
+
+            return {
+              id: s.studentId,
+              name: s.name,
+              studentNumber: s.studentNumber,
+              examTitle: exam.title,
+              cheatCount,
+              logs: logsForStudent,
+            };
+          })
+          .filter((s) => s.logs.length > 0); // ✅ 로그가 있는 사람만 필터링
 
         setLogs(formatted);
       } catch (e) {
@@ -113,8 +120,8 @@ export const LogPage = () => {
   const filtered = logs.filter((log) => {
     const keyword = search.toLowerCase();
     const matchesSearch =
-      log.name.includes(keyword) ||
-      log.studentNumber.includes(keyword);
+      (log.name || "").toLowerCase().includes(keyword) ||
+      String(log.studentNumber || "").includes(keyword);
     const matchesExam = selectedExam
       ? log.examTitle === selectedExam
       : true;
@@ -182,7 +189,6 @@ export const LogPage = () => {
                 <th>이름</th>
                 <th>시험명</th>
                 <th>부정행위 수</th>
-                <th>응시시간</th>
                 <th>로그보기 🔍</th>
               </tr>
             </thead>
@@ -193,7 +199,6 @@ export const LogPage = () => {
                   <td>{log.name}</td>
                   <td>{log.examTitle}</td>
                   <td>{log.cheatCount}</td>
-                  <td>{log.time}</td>
                   <td>
                     <button
                       className="action-button"

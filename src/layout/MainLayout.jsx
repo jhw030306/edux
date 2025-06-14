@@ -2,15 +2,25 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./MainLayout.css";
 
-export const MainLayout = ({ children }) => {
+export const MainLayout = ({
+  children,
+  disableNavigation = false,
+  onBlockedNavigation = null,
+}) => {
   const navigate = useNavigate();
 
-  // sessionStorage에 로그인 정보가 있으면 true
-  const isProfessor = !!sessionStorage.getItem("professorId");
-  const isStudent   = !!sessionStorage.getItem("studentLoginId");
+  const isProfessor =
+    !!sessionStorage.getItem("professorId");
+  const isStudent = !!sessionStorage.getItem(
+    "studentLoginId"
+  );
 
-  // 좌상단 로고 클릭 시 분기 이동
   const goToHome = () => {
+    if (disableNavigation) {
+      onBlockedNavigation?.("홈 이동 시도");
+      return;
+    }
+
     if (isProfessor) {
       navigate("/prolecturelist");
     } else if (isStudent) {
@@ -20,7 +30,16 @@ export const MainLayout = ({ children }) => {
     }
   };
 
-  // sessionStorage에서 강의 정보 불러오기
+  const handleLogout = () => {
+    if (disableNavigation) {
+      onBlockedNavigation?.("로그아웃 시도");
+      return;
+    }
+
+    sessionStorage.clear();
+    navigate("/login");
+  };
+
   const savedLecture = sessionStorage.getItem(
     "selectedLecture"
   );
@@ -33,19 +52,13 @@ export const MainLayout = ({ children }) => {
 
   return (
     <div className="Main-layout">
-       <div className="Main-logo" onClick={goToHome}>
+      <div className="Main-logo" onClick={goToHome}>
         EduX
         <span className="lecture-name">
           {title} {section}
         </span>
       </div>
-      <div
-        className="Main-logout"
-        onClick={() => {
-          sessionStorage.clear(); // 로그아웃 시 전체 세션 제거
-          navigate("/login");
-        }}
-      >
+      <div className="Main-logout" onClick={handleLogout}>
         로그아웃
       </div>
       <div className="Main-box">{children}</div>

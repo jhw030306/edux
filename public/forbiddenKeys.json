@@ -1,7 +1,8 @@
 [
-
   { "key": "PrintScreen", "label": "스크린 캡처" },
   { "key": "Control+Shift+I", "label": "개발자 도구 열기" },
   { "key": "Control+U", "label": "페이지 소스 보기" },
-  { "key": "Alt+Tab", "label": "창 전환" }
+  { "key": "Alt+Tab", "label": "창 전환" },
+  { "key": "F5", "label": "새로고침 (F5)" },
+  { "key": "Control+R", "label": "새로고침 (Ctrl+R)" }
 ]
