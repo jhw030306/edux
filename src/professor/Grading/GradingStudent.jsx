@@ -115,16 +115,27 @@ export default function GradingStudent() {
                       const isCorrectAnswer =
                         type === "multiple" ? i === correctIdx : opt === correctAnswer;
 
-                      let labelClass = "option-label";
-                      let checked = false;
+                       let labelClass = "option-label";
+                        // 기본은 체크 해제
+                        let checked = false;
+
+                        // 채점 전에는 학생이 선택한 보기만 체크
+                        if (isGrade !== 1) {
+                          checked = isStudentAnswer;
+                        }
 
                       if (isGrade === 1) {
+                        // 채점 완료: 정오답에 따라 클래스와 체크 상태 만큼만 적용
                         if (isStudentAnswer && isCorrectAnswer) {
+                          // 학생이 고른 게 정답일 때
                           labelClass += " correct";
                           checked = true;
                         } else if (isStudentAnswer && !isCorrectAnswer) {
+                          // 학생이 고른 게 오답일 때
                           labelClass += " wrong";
+                          // checked = false; (아무 것도 안 해도 false)
                         } else if (!isStudentAnswer && isCorrectAnswer) {
+                          // 학생이 고르지 않았지만 이것이 정답일 때
                           labelClass += " student";
                           checked = true;
                         }

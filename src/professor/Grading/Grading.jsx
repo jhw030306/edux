@@ -8,6 +8,12 @@ import { MainLayout } from "../../layout/MainLayout";
 import "./Grading.css";
 import api from "../../api/axios";
 
+const STUDENT_STATUS = {
+  NOT_SUBMITTED: "미응시",
+  NOT_GRADED: "미채점",
+  COMPLETED: "채점 완료"
+};
+
 const Grading = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,6 +30,8 @@ const Grading = () => {
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Loading 상태 관리를 위한 state 추가
+  const [error, setError] = useState(null);
 
   // 학생 목록 + 채점 상태 불러오기
   const fetchStudents = useCallback(async () => {
@@ -59,7 +67,7 @@ const Grading = () => {
             return {
               ...stu,
               score: null,
-              status: "미응시",
+              status: STUDENT_STATUS.NOT_SUBMITTED,
             };
           }
 
@@ -80,7 +88,7 @@ const Grading = () => {
             return {
               ...stu,
               score: null,
-              status: "미채점",
+              status: STUDENT_STATUS.NOT_GRADED,
             };
           }
 
@@ -99,13 +107,14 @@ const Grading = () => {
           return {
             ...stu,
             score: totalObj.totalScore,
-            status: "채점 완료",
+            status: STUDENT_STATUS.COMPLETED,
           };
         })
       );
 
       setStudents(updated);
     } catch (err) {
+      setError(err.message);
       console.error("❌ 학생 목록 조회 실패", err);
     }
   }, [examId, classroomId]);
@@ -116,12 +125,31 @@ const Grading = () => {
 
   // 자동채점
   const handleAutoGrading = async () => {
-    if (!examId) return;
-    setLoading(true);
     try {
-      const toGrade = students.filter(
-        (s) => s.status === "미채점"
-      );
+      // 학생 명단 존재 여부 확인
+      if (!students || students.length === 0) {
+        alert('채점할 학생 명단이 없습니다.');
+        return;
+      }
+
+      // 미채점 상태인 학생만 필터링
+      const toGrade = students.filter((s) => s.status === "미채점");
+      
+      // 미채점 학생이 없는 경우 처리
+      if (toGrade.length === 0) {
+        alert('자동채점할 학생이 없습니다. (미응시 또는 이미 채점 완료)');
+        return;
+      }
+
+      // API 호출 전 유효성 검사
+      if (!examId) {
+        alert('시험 정보가 올바르지 않습니다.');
+        return;
+      }
+
+      setLoading(true);
+      setIsLoading(true);
+
       await Promise.all(
         toGrade.map((s) =>
           api.post("/grading/autograde", null, {
@@ -133,13 +161,21 @@ const Grading = () => {
           })
         )
       );
-      alert("자동채점 완료");
+      
+      alert("자동채점이 완료되었습니다.");
       await fetchStudents();
     } catch (err) {
-      console.error("자동채점 실패", err);
-      alert("자동채점 중 오류 발생");
+      console.error("자동채점 중 오류 발생:", err);
+      
+      // 에러 메시지 상세화
+      if (err.response?.status === 404) {
+        alert('요청한 리소스를 찾을 수 없습니다.');
+      } else {
+        alert(`자동채점 처리 중 오류가 발생했습니다: ${err.message}`);
+      }
     } finally {
       setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -148,6 +184,12 @@ const Grading = () => {
       state: { student, examId },
     });
   };
+
+  const LoadingSpinner = () => (
+    <div className="loading-spinner-overlay">
+      <div className="loading-spinner">채점 진행 중...</div>
+    </div>
+  );
 
   return (
     <MainLayout>
@@ -161,6 +203,8 @@ const Grading = () => {
             {loading ? "자동채점 중..." : "자동채점"}
           </button>
         </div>
+
+        {isLoading && <LoadingSpinner />}
 
         <table className="grading-table">
           <thead>
