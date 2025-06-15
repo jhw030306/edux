@@ -109,7 +109,7 @@ const SignupStu = () => {
   };
   
 
-  const sendVerification = () => {
+  const sendVerification = async () => {
     if (!emailRegex.test(form.email)) {
       setErrors((prev) => ({
         ...prev,
@@ -118,23 +118,50 @@ const SignupStu = () => {
       return;
     }
 
-    const code = generateRandomCode(); // ✅ 새 인증번호 생성
-    setSentCode(code);
-    alert(
-      `인증번호가 이메일로 전송되었습니다: ${code} (모의)`
-    );
+    try {
+      const response = await fetch(`${API_BASE}/email/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email }),
+      });
+
+      if (response.ok) {
+        alert("이메일로 인증번호가 전송되었습니다.");
+      } else {
+        const err = await response.text();
+        alert("인증번호 전송 실패: " + err);
+      }
+    } catch (error) {
+      alert("인증번호 전송 중 오류 발생: " + error.message);
+    }
   };
 
-  const confirmCode = () => {
-    if (form.code === sentCode) {
-      setCodeConfirmed(true);
-      alert("이메일 인증 완료!");
-      setErrors((prev) => ({ ...prev, code: "" }));
-    } else {
-      setErrors((prev) => ({
-        ...prev,
-        code: "인증번호가 올바르지 않습니다.",
-      }));
+  const confirmCode = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/email/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email,
+          code: form.code,
+        }),
+      });
+
+      if (response.ok) {
+        alert("이메일 인증 완료!");
+        setCodeConfirmed(true);
+        setErrors((prev) => ({ ...prev, code: "" }));
+      } else {
+        const err = await response.text();
+        alert("인증 실패: " + err);
+        setCodeConfirmed(false);
+        setErrors((prev) => ({
+          ...prev,
+          code: "인증번호가 올바르지 않거나 만료되었습니다.",
+        }));
+      }
+    } catch (error) {
+      alert("인증 확인 중 오류 발생: " + error.message);
     }
   };
 

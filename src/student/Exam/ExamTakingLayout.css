@@ -315,3 +315,39 @@ textarea {
   color: #888;
   cursor: not-allowed;
 }
+
+.internet-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-right: 1px solid #ccc;
+  background: #fff;
+  height: 100%;
+}
+
+.search-box {
+  flex: 3; /* 30% */
+  overflow: auto;
+  border-bottom: 1px solid #ccc;
+  padding: 12px;
+}
+
+.iframe-box {
+  flex: 7; /* 70% */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.iframe-controls {
+  padding: 6px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+  text-align: right;
+}
+
+.result-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+}

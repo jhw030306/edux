@@ -285,7 +285,7 @@ const ExamEditor = () => {
               }
               onClick={() => setActiveTab("access")}
             >
-              허용 범위
+              제한 범위
             </button>
             <button
               className={

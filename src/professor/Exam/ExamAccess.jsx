@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import "./ExamEditor.css";
+import { blockGroups } from "./blockGroups.js";
+
 
 const ExamAccess = ({ access, updateAccess }) => {
   const [customUrl, setCustomUrl] = useState("");
@@ -8,11 +10,15 @@ const ExamAccess = ({ access, updateAccess }) => {
     updateAccess({ ...access, mode });
   };
 
-  const addSite = (site) => {
-    if (site && !access.allowedSites.includes(site)) {
+  const addSites = (sites) => {
+    const newSites = sites.filter(
+      (site) => site && !access.allowedSites.includes(site)
+    );
+
+    if (newSites.length > 0) {
       updateAccess({
         ...access,
-        allowedSites: [...access.allowedSites, site],
+        allowedSites: [...access.allowedSites, ...newSites],
       });
     }
   };
@@ -64,22 +70,13 @@ const ExamAccess = ({ access, updateAccess }) => {
         <>
           {/* 추천 사이트 */}
           <div className="row">
-            <label>추천 사이트</label>
+            <label>추천 차단 사이트</label>
             <div className="site-buttons">
-              <button
-                onClick={() =>
-                  addSite("https://www.youtube.com")
-                }
-              >
-                유튜브
-              </button>
-              <button
-                onClick={() =>
-                  addSite("https://www.tistory.com")
-                }
-              >
-                티스토리
-              </button>
+              {blockGroups.map((group) => (
+                <button onClick={() => addSites(group.sites)}>
+                  {group.name}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -99,17 +96,19 @@ const ExamAccess = ({ access, updateAccess }) => {
               }}
             />
             <button
+              // 직접 추가
               onClick={() => {
-                addSite(customUrl.trim());
+                addSites([customUrl.trim()]);
                 setCustomUrl("");
               }}
+
             >
               추가
             </button>
           </div>
 
           <div className="row">
-            <label>허용 목록</label>
+            <label>금지 목록</label>
             {access.allowedSites.length > 0 && (
               <div className="site-item">
                 <div className="site-url">
