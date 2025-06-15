@@ -22,8 +22,31 @@ import { LogPage } from "./professor/Lecture/button/LogPage";
 import { StudentList } from "./professor/Lecture/button/StudentList";
 import Grading from "./professor/Grading/Grading";
 import GradingStudent from "./professor/Grading/GradingStudent";
+import React, { useEffect } from "react";
 
 function App() {
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const studentId = sessionStorage.getItem("studentLoginId");
+      if (!studentId) return;
+
+      const payload = {
+        studentId: studentId,
+        timestamp: new Date().toISOString(), // 서버에 ISO 포맷으로 전송
+      };
+
+      const blob = new Blob([JSON.stringify(payload)], {
+        type: "application/json",
+      });
+
+      navigator.sendBeacon("/api/students/logout", blob);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+
   return (
     <Routes>
       <Route path="/" element={<Mainpage />} />

@@ -100,7 +100,7 @@ const SignupProf = () => {
     }
   };
 
-  const sendVerification = () => {
+  const sendVerification = async () => {
     if (!emailRegex.test(form.email)) {
       setErrors((prev) => ({
         ...prev,
@@ -109,25 +109,34 @@ const SignupProf = () => {
       return;
     }
 
-    const code = generateRandomCode();
-    setSentCode(code);
-    alert(
-      `인증번호가 이메일로 전송되었습니다: ${code} (모의)`
-    );
-  };
-
-  const confirmCode = () => {
-    if (form.code === sentCode) {
-      setCodeConfirmed(true);
-      alert("이메일 인증 완료!");
-      setErrors((prev) => ({ ...prev, code: "" }));
-    } else {
-      setErrors((prev) => ({
-        ...prev,
-        code: "인증번호가 올바르지 않습니다.",
-      }));
+    try {
+      await api.post("/email/send", { email: form.email });
+      alert("이메일로 인증번호가 전송되었습니다.");
+    } catch (error) {
+      alert("인증번호 전송 실패: " + (error.response?.data || error.message));
     }
   };
+
+  const confirmCode = async () => {
+    try {
+      const response = await api.post("/email/verify", {
+        email: form.email,
+        code: form.code,
+      });
+
+      alert("이메일 인증 완료!");
+      setCodeConfirmed(true);
+      setErrors((prev) => ({ ...prev, code: "" }));
+    } catch (error) {
+      setCodeConfirmed(false);
+      setErrors((prev) => ({
+        ...prev,
+        code: "인증번호가 올바르지 않거나 만료되었습니다.",
+      }));
+      alert("인증 실패: " + (error.response?.data || error.message));
+    }
+  };
+
 
   const handleSubmit = async(e) => {
     e.preventDefault();
